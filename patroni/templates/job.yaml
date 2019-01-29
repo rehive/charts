@@ -4,10 +4,9 @@ metadata:
   name: {{ template "patroni.fullname" . }}-cleanup
   labels:
     app: {{ template "patroni.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    chart: {{ template "patroni.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-    application: {{ template "patroni.name" . }}
     cluster: {{ template "patroni.fullname" . }}
   annotations:
     "helm.sh/hook": post-delete
@@ -18,8 +17,6 @@ spec:
       labels:
         app: {{ template "patroni.name" . }}
         release: {{ .Release.Name }}
-        application: {{ template "patroni.name" . }}
-        cluster: {{ template "patroni.fullname" . }}
     spec:
       restartPolicy: OnFailure
       containers:

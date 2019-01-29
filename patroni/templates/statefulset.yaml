@@ -35,14 +35,13 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: POD_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.namespace
+              value: {{ .Release.Namespace }}
             - name: DCS_ENABLE_KUBERNETES_API
               value: "true"
             - name: USE_KUBERNETES
               value: "true"
+            - name: WAL_BUCKET_SCOPE_PREFIX
+              value: ""
           {{- if .Values.useConfigMaps }}
             - name: KUBERNETES_USE_CONFIGMAPS
               value: "true"
