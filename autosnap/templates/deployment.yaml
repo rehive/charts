@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: autosnap-backup
@@ -8,11 +8,18 @@ spec:
   replicas: 1
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: autosnap
   template:
     metadata:
       labels:
-        app: backup
+        app: autosnap
     spec:
+      volumes:
+        - name: google-application-credentials
+          secret:
+            secretName: autosnap-credentials
       containers:
         - name: backup
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -27,6 +34,11 @@ spec:
               value: {{ .Values.snapshotName }}
             - name: INTERVAL_MINUTES
               value: "{{ .Values.interval }}"
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/var/secrets/google/key.json"
           command: ['/bin/bash','-c','python app.py']
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+            - name: google-application-credentials
+              mountPath: "/var/secrets/google"
