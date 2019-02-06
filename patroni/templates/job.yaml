@@ -9,7 +9,7 @@ metadata:
     heritage: {{ .Release.Service }}
     cluster: {{ template "patroni.fullname" . }}
   annotations:
-    "helm.sh/hook": post-delete
+    "helm.sh/hook": pre-delete
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
