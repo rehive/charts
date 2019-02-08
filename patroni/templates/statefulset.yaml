@@ -7,6 +7,8 @@ metadata:
     chart: {{ template "patroni.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    application: {{ template "patroni.name" . }}
+    cluster: {{ template "patroni.fullname" . }}
 spec:
   serviceName: {{ template "patroni.fullname" . }}
   replicas: {{ .Values.replicas }}
@@ -21,6 +23,8 @@ spec:
       labels:
         app: {{ template "patroni.name" . }}
         release: {{ .Release.Name }}
+        application: {{ template "patroni.name" . }}
+        cluster: {{ template "patroni.fullname" . }}
     spec:
       serviceAccountName: {{ template "patroni.serviceAccountName" . }}
       containers:
