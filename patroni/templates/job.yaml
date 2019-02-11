@@ -9,7 +9,8 @@ metadata:
     heritage: {{ .Release.Service }}
     cluster: {{ template "patroni.fullname" . }}
   annotations:
-    "helm.sh/hook": pre-delete
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-weight": "0"
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
@@ -19,17 +20,24 @@ spec:
         release: {{ .Release.Name }}
     spec:
       restartPolicy: OnFailure
-      serviceAccountName: {{ template "patroni.serviceAccountName" . }}
+      serviceAccountName: {{ template "patroni.serviceAccountName" . }}-cleanup
       containers:
+        {{- if .Values.useConfigMaps }}
         - name: configmap-cleanup
+        {{- else }}
+        - name: endpoints-cleanup
+        {{- end }}
           image: {{ .Values.cleanup.image.repository }}:{{ .Values.cleanup.image.tag }}
           imagePullPolicy: {{ .Values.cleanup.image.pullPolicy }}
           command:
             - sh
             - -c
+          {{- if .Values.useConfigMaps }}
             - |
               kubectl delete configmap --namespace {{ .Release.Namespace }} \
                   --selector app={{ template "patroni.name" . }},release={{ .Release.Name }}
-
+          {{- else }}
+            - |
               kubectl delete endpoints --namespace {{ .Release.Namespace }} \
                   --selector app={{ template "patroni.name" . }},release={{ .Release.Name }}
+          {{ end }}
