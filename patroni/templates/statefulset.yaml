@@ -13,7 +13,7 @@ spec:
   serviceName: {{ template "patroni.fullname" . }}
   replicas: {{ .Values.replicas }}
   updateStrategy:
-    type: RollingUpdate
+    type: OnDelete
   selector:
     matchLabels:
       app: {{ template "patroni.name" . }}
