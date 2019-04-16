@@ -76,6 +76,10 @@ spec:
 {{- end}}
         resources:
 {{ toYaml .Values.deployment.resources | indent 10 }}
+        volumeMounts:
+{{ toYaml .Values.volumeMounts | indent 10 }}
+    volumes:
+{{ toYaml .Values.volumes | indent 8 }}
 ---
 {{- if .Values.management.enabled }}
 apiVersion: v1
@@ -140,4 +144,8 @@ spec:
       limits:
         memory: 1G
         cpu: 266m
+    volumeMounts:
+{{ toYaml .Values.volumeMounts | indent 10 }}
+  volumes:
+{{ toYaml .Values.volumes | indent 8 }}
 {{- end }}
