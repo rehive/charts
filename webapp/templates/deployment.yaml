@@ -39,6 +39,10 @@ spec:
 {{- end}}
         resources:
 {{ toYaml .Values.deployment.resources | indent 10 }}
+        volumeMounts:
+{{ toYaml .Values.volumeMounts | indent 10 }}
+    volumes:
+{{ toYaml .Values.volumes | indent 8 }}
 ---
 {{- if .Values.management.enabled }}
 apiVersion: v1
@@ -61,4 +65,8 @@ spec:
 {{ toYaml .Values.envFrom | indent 10 }}
     resources:
 {{ toYaml .Values.deployment.management.resources | indent 10 }}
+    volumeMounts:
+{{ toYaml .Values.volumeMounts | indent 10 }}
+  volumes:
+{{ toYaml .Values.volumes | indent 8 }}
 {{- end }}
