@@ -3,6 +3,7 @@
 {{- $postgres := .Values.postgres -}}
 {{- $rabbitmq := .Values.rabbitmq -}}
 {{- $redis := .Values.redis -}}
+{{- $gcloudCredentials := .Values.gcloudCredentials -}}
 {{- $tag := .Values.image.tag -}}
 {{- $serviceName := include "fullname" . -}}
 {{- $revision := .Release.Revision -}}
@@ -35,6 +36,10 @@ spec:
         - containerPort: {{ $worker.internalPort }}
         command: {{ $worker.command }}
         env:
+        {{- if $gcloudCredentials.enabled }}
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/etc/credentials/{{ $gcloudCredentials.kubernetesSecret }}.json"
+        {{- end }}
         {{- if $postgres.enabled }}
           - name: POSTGRES_HOST
             value: "{{ $postgres.host}}"
@@ -75,6 +80,16 @@ spec:
               name: {{ $serviceName }}
         resources:
 {{ toYaml $worker.resources | indent 10 }}
+{{- if $gcloudCredentials.enabled }}
+        volumeMounts:
+          - name: {{ $gcloudCredentials.kubernetesSecret }}
+          mountPath: /etc/credentials
+          readOnly: true
+    volumes:
+      - name: {{ $gcloudCredentials.kubernetesSecret }}
+      secret:
+        secretName: {{ $gcloudCredentials.kubernetesSecret }}
+{{- end }}
 ---
 {{ end }}
 {{- end -}}

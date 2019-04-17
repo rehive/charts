@@ -55,6 +55,9 @@ rabbitmq:
   secret:
     name: rabbitmq-example-rabbitmq-ha
     key: rabbitmq-password
+gcloudCredentials:
+  enabled: false
+  kubernetesSecret: gcloud_credentials
 workersEnabled: false
 workers:
   - name: worker-receive
@@ -62,5 +65,3 @@ workers:
     replicaCount: 1
     command: ['/bin/sh','-c', 'celery -A config.celery worker --loglevel=INFO --concurrency=1 -Q general-example']
     requests: {}
-volumeMounts:
-volumes:

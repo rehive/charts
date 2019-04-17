@@ -40,9 +40,9 @@ management:
     limits:
       memory: 1G
       cpu: 266m
-workersEnabled: false
 volumeMounts:
 volumes:
+workersEnabled: false
 workers:
   - name: worker-general
     internalPort: 8000
