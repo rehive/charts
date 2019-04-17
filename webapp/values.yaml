@@ -49,3 +49,5 @@ workers:
     replicaCount: 1
     command: ['/bin/sh','-c', 'celery -A config.celery worker --loglevel=INFO --concurrency=1 -Q general-example']
     requests: {}
+    volumes:
+    volumeMounts:
