@@ -85,10 +85,10 @@ spec:
           - name: {{ $gcloudCredentials.kubernetesSecret }}
             mountPath: /etc/credentials
             readOnly: true
-    volumes:
-      - name: {{ $gcloudCredentials.kubernetesSecret }}
-        secret:
-          secretName: {{ $gcloudCredentials.kubernetesSecret }}
+      volumes:
+        - name: {{ $gcloudCredentials.kubernetesSecret }}
+          secret:
+            secretName: {{ $gcloudCredentials.kubernetesSecret }}
 {{- end }}
 ---
 {{ end }}
