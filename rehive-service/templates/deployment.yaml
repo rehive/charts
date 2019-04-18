@@ -28,7 +28,7 @@ spec:
         env:
         {{- if .Values.gcloudCredentials.enabled }}
           - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: "/etc/credentials/{{ .Values.gcloudCredentials.kubernetesSecret }}.json"
+            value: "/etc/credentials/{{ .Values.gcloudCredentials.kubernetesSecret }}.json"
         {{- end }}
         {{- if .Values.postgres.enabled }}
           - name: POSTGRES_HOST
@@ -83,12 +83,12 @@ spec:
 {{- if .Values.gcloudCredentials.enabled }}
         volumeMounts:
           - name: {{ .Values.gcloudCredentials.kubernetesSecret }}
-          mountPath: /etc/credentials
-          readOnly: true
+            mountPath: /etc/credentials
+            readOnly: true
     volumes:
       - name: {{ .Values.gcloudCredentials.kubernetesSecret }}
-      secret:
-        secretName: {{ .Values.gcloudCredentials.kubernetesSecret }}
+        secret:
+          secretName: {{ .Values.gcloudCredentials.kubernetesSecret }}
 {{- end }}
 ---
 {{- if .Values.management.enabled }}
@@ -107,10 +107,6 @@ spec:
     imagePullPolicy: {{ .Values.image.pullPolicy }}
     command: ['/bin/sh','-c', 'python manage.py runserver'] # Hack to create long-running pod
     env:
-    {{- if .Values.gcloudCredentials.enabled }}
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-      value: "/etc/credentials/{{ .Values.gcloudCredentials.kubernetesSecret }}.json"
-    {{- end }}
     {{- if .Values.postgres.enabled }}
       - name: POSTGRES_HOST
         value: "{{ .Values.postgres.host}}"
@@ -159,13 +155,13 @@ spec:
         memory: 1G
         cpu: 266m
 {{- if .Values.gcloudCredentials.enabled }}
-        volumeMounts:
-          - name: {{ .Values.gcloudCredentials.kubernetesSecret }}
-          mountPath: /etc/credentials
-          readOnly: true
-    volumes:
+    volumeMounts:
       - name: {{ .Values.gcloudCredentials.kubernetesSecret }}
-      secret:
-        secretName: {{ .Values.gcloudCredentials.kubernetesSecret }}
+        mountPath: /etc/credentials
+        readOnly: true
+volumes:
+  - name: {{ .Values.gcloudCredentials.kubernetesSecret }}
+    secret:
+      secretName: {{ .Values.gcloudCredentials.kubernetesSecret }}
 {{- end }}
 {{- end }}
