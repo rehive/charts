@@ -21,7 +21,7 @@ image:
 service:
   name: nginx
   type: ClusterIP
-  externalPort: http
+  externalPort: 80
   internalPort: 8000
 
 ingress:
