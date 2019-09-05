@@ -57,8 +57,8 @@ spec:
           {{- range $repository := .Values.continuousDeployments.repositories }}
           volumeMounts:
             - name: {{ $repository.name }}-src
-              mountPath: /zergling/opt/{{ $repository.name }}
-              readOnly: true
+              mountPath: /rehive/opt/{{ $repository.name }}
+              readOnly: false # To write build logs
           {{- end }}
           {{- end }}
         {{- if .Values.continuousDeployments.enabled }}
