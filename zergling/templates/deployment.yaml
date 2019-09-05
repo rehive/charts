@@ -17,7 +17,7 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       {{- if .Values.continuousDeployments.enabled }}
-      {{- range $repository := .Values.continuousDeployments }}
+      {{- range $repository := .Values.continuousDeployments.repositories }}
       volumes:
         - name: {{ $repository.name }}-src
           emptyDir: {}
@@ -25,34 +25,36 @@ spec:
           secret:
             secretName: ${{ $repository.name }}-ssh
             items:
-              - keys: private-key
+              - key: private-key
                 mode: 384
                 path: id_rsa
-              - keys: public-key
+              - key: public-key
                 mode: 420
                 path: id_rsa.pub
       {{- end }}
       {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: webapp
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: {{ .Values.webapp.command }}
+          args: {{ .Values.webapp.args }}
           ports:
-            - name: http
-              containerPort: 80
+            - name: {{ .Values.service.name }}
+              containerPort: {{ .Values.service.internalPort }}
               protocol: TCP
           livenessProbe:
             httpGet:
               path: /healthz
-              port: http
+              port: {{ .Values.service.internalPort }}
           readinessProbe:
             httpGet:
               path: /readiness
-              port: http
+              port: {{ .Values.service.internalPort }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- if .Values.continuousDeployments.enabled }}
-          {{- range $repository := .Values.continuousDeployments }}
+          {{- range $repository := .Values.continuousDeployments.repositories }}
           volumeMounts:
             - name: {{ $repository.name }}-src
               mountPath: /zergling/opt/{{ $repository.name }}
@@ -60,6 +62,7 @@ spec:
           {{- end }}
           {{- end }}
         {{- if .Values.continuousDeployments.enabled }}
+        {{- $resources := .Values.continuousDeployments.resources }}
         {{- range $repository := .Values.continuousDeployments.repositories }}
         - name: $repository.name
           image: {{ $repository.image }}:{{ $repository.tag }}
@@ -68,7 +71,7 @@ spec:
             - name: REHIVE_REPOSITORY
               value: {{ $repository.repoUser }}/{{ $repository.name }}
           resources:
-            {{- toYaml .Values.continuousDeployments.resources | nindent 12 }}
+            {{- toYaml $resources | nindent 12 }}
           volumeMounts:
             - name: {{ $repository.name }}-src
               mountPath: /zergling/src
