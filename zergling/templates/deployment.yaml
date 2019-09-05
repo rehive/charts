@@ -23,7 +23,7 @@ spec:
           emptyDir: {}
         - name: {{ $repository.name }}-ssh-keys
           secret:
-            secretName: ${{ $repository.name }}-ssh
+            secretName: {{ $repository.name }}-ssh
             items:
               - key: private-key
                 mode: 384
@@ -64,7 +64,7 @@ spec:
         {{- if .Values.continuousDeployments.enabled }}
         {{- $resources := .Values.continuousDeployments.resources }}
         {{- range $repository := .Values.continuousDeployments.repositories }}
-        - name: $repository.name
+        - name: {{ $repository.name }}
           image: {{ $repository.image }}:{{ $repository.tag }}
           imagePullPolicy: IfNotPresent
           env:
