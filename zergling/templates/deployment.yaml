@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ include "zergling.fullname" . }}
   labels:
-{{ include "zergling.labels" . | indent 4 }}
+    {{ include "zergling.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -16,13 +16,26 @@ spec:
         app.kubernetes.io/name: {{ include "zergling.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-    {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
+      {{- if .Values.continuousDeployments.enabled }}
+      {{- range $repository := .Values.continuousDeployments }}
+      volumes:
+        - name: {{ $repository.name }}-src
+          emptyDir: {}
+        - name: {{ $repository.name }}-ssh-keys
+          secret:
+            secretName: ${{ $repository.name }}-ssh
+            items:
+              - keys: private-key
+                mode: 384
+                path: id_rsa
+              - keys: public-key
+                mode: 420
+                path: id_rsa.pub
+      {{- end }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
@@ -30,23 +43,50 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /healthz
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /readiness
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.continuousDeployments.enabled }}
+          {{- range $repository := .Values.continuousDeployments }}
+          volumeMounts:
+            - name: {{ $repository.name }}-src
+              mountPath: /zergling/opt/{{ $repository.name }}
+              readOnly: true
+          {{- end }}
+          {{- end }}
+        {{- if .Values.continuousDeployments.enabled }}
+        {{- range $repository := .Values.continuousDeployments.repositories }}
+        - name: $repository.name
+          image: {{ $repository.image }}:{{ $repository.tag }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: REHIVE_REPOSITORY
+              value: {{ $repository.repoUser }}/{{ $repository.name }}
+          resources:
+            {{- toYaml .Values.continuousDeployments.resources | nindent 12 }}
+          volumeMounts:
+            - name: {{ $repository.name }}-src
+              mountPath: /zergling/src
+              readOnly: false
+            - name: {{ $repository.name }}-ssh-keys
+              mountPath: /zergling/.ssh/github.com/deploy
+              readOnly: false
+        {{- end}}
+        {{- end}}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-    {{- with .Values.affinity }}
+      {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
+      {{- end }}
+      {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
+      {{- end }}

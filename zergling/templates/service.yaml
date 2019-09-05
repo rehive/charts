@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ include "zergling.fullname" . }}
   labels:
-{{ include "zergling.labels" . | indent 4 }}
+    {{ include "zergling.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
