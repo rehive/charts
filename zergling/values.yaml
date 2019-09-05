@@ -4,6 +4,15 @@
 
 replicaCount: 1
 environment: staging
+
+webapp:
+  command:
+    - gunicorn
+  args:
+    - run:app
+    - --config
+    - file:config/gunicorn.py
+
 image:
   repository: gcr.io/rehive-services/zergling-gitbot
   tag: latest
@@ -12,7 +21,7 @@ image:
 service:
   name: nginx
   type: ClusterIP
-  externalPort: 80
+  externalPort: http
   internalPort: 8000
 
 ingress:
