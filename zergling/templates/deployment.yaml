@@ -56,7 +56,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: REHIVE_REPOSITORY
-              value: {{ $repository.repoUser }}/{{ $repository.name }}
+              value: {{ $repository.user }}/{{ $repository.name }}
           livenessProbe:
             initialDelaySeconds: 5
             periodSeconds: 10
@@ -85,6 +85,11 @@ spec:
               readOnly: false
         {{- end}}
         {{- end}}
+      securityContext:
+        fsGroup: 420
+        runAsNonRoot: true
+        runAsUser: 420
+        runAsGroup: 420
       {{- if .Values.continuousDeployments.enabled }}
       {{- range $repository := .Values.continuousDeployments.repositories }}
       volumes:
@@ -93,6 +98,7 @@ spec:
         - name: {{ $repository.name }}-ssh-key
           secret:
             secretName: {{ $repository.name }}-ssh
+            defaultMode: 438
             items:
               - key: private-key
                 mode: 384
