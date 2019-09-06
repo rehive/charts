@@ -1,0 +1,29 @@
+{{- if .Values.ingress.enabled -}}
+{{- $serviceName := include "zergling.fullname" . -}}
+{{- $servicePort := .Values.service.externalPort -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ template "zergling.fullname" . }}
+  labels:
+    {{ include "zergling.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  rules:
+    {{- range $host := .Values.ingress.hosts }}
+    - host: {{ $host }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ $serviceName }}
+              servicePort: {{ $servicePort }}
+    {{- end -}}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{ toYaml . | nindent 4 }}
+  {{- end -}}
+{{- end -}}
