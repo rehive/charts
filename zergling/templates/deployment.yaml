@@ -16,23 +16,6 @@ spec:
         app.kubernetes.io/name: {{ include "zergling.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-      {{- if .Values.continuousDeployments.enabled }}
-      {{- range $repository := .Values.continuousDeployments.repositories }}
-      volumes:
-        - name: {{ $repository.name }}-src
-          emptyDir: {}
-        - name: {{ $repository.name }}-ssh-keys
-          secret:
-            secretName: {{ $repository.name }}-ssh
-            items:
-              - key: private-key
-                mode: 384
-                path: id_rsa
-              - key: public-key
-                mode: 420
-                path: id_rsa.pub
-      {{- end }}
-      {{- end }}
       containers:
         - name: webapp
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -44,10 +27,14 @@ spec:
               containerPort: {{ .Values.service.internalPort }}
               protocol: TCP
           livenessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 10
             httpGet:
               path: /healthz
               port: {{ .Values.service.internalPort }}
           readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 10
             httpGet:
               path: /readiness
               port: {{ .Values.service.internalPort }}
@@ -66,21 +53,52 @@ spec:
         {{- range $repository := .Values.continuousDeployments.repositories }}
         - name: {{ $repository.name }}
           image: {{ $repository.image }}:{{ $repository.tag }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: REHIVE_REPOSITORY
               value: {{ $repository.repoUser }}/{{ $repository.name }}
+          livenessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            exec:
+              command:
+                - git
+                - status
+                - --untracked-files=no
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            exec:
+              command:
+                - git
+                - fetch
+                - origin
+                - master
           resources:
             {{- toYaml $resources | nindent 12 }}
           volumeMounts:
             - name: {{ $repository.name }}-src
               mountPath: /zergling/src
               readOnly: false
-            - name: {{ $repository.name }}-ssh-keys
-              mountPath: /zergling/.ssh/github.com/deploy
+            - name: {{ $repository.name }}-ssh-key
+              mountPath: /zergling/.ssh/github.com/
               readOnly: false
         {{- end}}
         {{- end}}
+      {{- if .Values.continuousDeployments.enabled }}
+      {{- range $repository := .Values.continuousDeployments.repositories }}
+      volumes:
+        - name: {{ $repository.name }}-src
+          emptyDir: {}
+        - name: {{ $repository.name }}-ssh-key
+          secret:
+            secretName: {{ $repository.name }}-ssh
+            items:
+              - key: private-key
+                mode: 384
+                path: deploy/id_rsa
+      {{- end }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
