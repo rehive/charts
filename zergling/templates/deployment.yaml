@@ -73,7 +73,6 @@ spec:
                 - git
                 - fetch
                 - origin
-                - master
           resources:
             {{- toYaml $resources | nindent 12 }}
           volumeMounts:
