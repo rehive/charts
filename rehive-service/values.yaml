@@ -7,7 +7,7 @@ deployment:
   command:
 image:
   repository: rehive/example
-  tag: 0.001
+  tag: latest
   pullPolicy: IfNotPresent
 service:
   name: nginx
