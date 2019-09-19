@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "fullname" . }}
@@ -70,26 +70,28 @@ spec:
           - secretRef:
               name: {{ .Values.envFromSecret.secretName | default (include "fullname" .) }}
         {{- end }}
-{{- if .Values.service.livenessProbe }}
+        {{- with .Values.service.livenessProbe }}
         livenessProbe:
-{{ toYaml .Values.service.livenessProbe | indent 10 }}
-{{- end }}
-{{- if .Values.service.readinessProbe }}
+          {{ toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.service.readinessProbe }}
         readinessProbe:
-{{ toYaml .Values.service.readinessProbe | indent 10 }}
-{{- end}}
+          {{ toYaml . | nindent 10 }}
+        {{- end}}
         resources:
-{{ toYaml .Values.deployment.resources | indent 10 }}
-{{- if .Values.gcloudCredentials.enabled }}
+          {{ toYaml .Values.deployment.resources | nindent 10 }}
+        {{- if .Values.gcloudCredentials.enabled }}
         volumeMounts:
           - name: {{ .Values.gcloudCredentials.kubernetesSecret }}
             mountPath: /etc/credentials
             readOnly: true
+        {{- end }}
+      {{- if .Values.gcloudCredentials.enabled }}
       volumes:
         - name: {{ .Values.gcloudCredentials.kubernetesSecret }}
           secret:
             secretName: {{ .Values.gcloudCredentials.kubernetesSecret }}
-{{- end }}
+      {{- end }}
 ---
 {{- if .Values.management.enabled }}
 apiVersion: v1
@@ -154,14 +156,16 @@ spec:
       limits:
         memory: 1G
         cpu: 266m
-{{- if .Values.gcloudCredentials.enabled }}
+    {{- if .Values.gcloudCredentials.enabled }}
     volumeMounts:
       - name: {{ .Values.gcloudCredentials.kubernetesSecret }}
         mountPath: /etc/credentials
         readOnly: true
+    {{- end }}
+  {{- if .Values.gcloudCredentials.enabled }}
   volumes:
     - name: {{ .Values.gcloudCredentials.kubernetesSecret }}
       secret:
         secretName: {{ .Values.gcloudCredentials.kubernetesSecret }}
-{{- end }}
+  {{- end }}
 {{- end }}

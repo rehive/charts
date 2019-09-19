@@ -79,17 +79,19 @@ spec:
           - secretRef:
               name: {{ $serviceName }}
         resources:
-{{ toYaml $worker.resources | indent 10 }}
-{{- if $gcloudCredentials.enabled }}
+          {{ toYaml $worker.resources | nindent 10 }}
+        {{- if $gcloudCredentials.enabled }}
         volumeMounts:
           - name: {{ $gcloudCredentials.kubernetesSecret }}
             mountPath: /etc/credentials
             readOnly: true
+        {{- end }}
+      {{- if $gcloudCredentials.enabled }}
       volumes:
         - name: {{ $gcloudCredentials.kubernetesSecret }}
           secret:
             secretName: {{ $gcloudCredentials.kubernetesSecret }}
-{{- end }}
+      {{- end }}
 ---
 {{ end }}
 {{- end -}}
