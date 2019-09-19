@@ -10,7 +10,7 @@
 
 {{- if .Values.workersEnabled -}}
 {{- range $worker := .Values.workers }}
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ $worker.name }}
@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: {{ $worker.name }}
-        image: "{{ $repository }}:{{ $tag }}"
+        image: {{ $repository }}:{{ $tag }}
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: {{ $worker.internalPort }}
