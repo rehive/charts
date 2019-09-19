@@ -31,8 +31,6 @@ ingress:
     - hosts:
       - example.services.rehive.io
       secretName: stellar-service-tls
-  hosts:
-    - example.services.rehive.io
 postgres:
   enabled: false
   host: patroni-example-patroni.example-namespace.svc.cluster.local

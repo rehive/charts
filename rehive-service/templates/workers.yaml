@@ -92,6 +92,5 @@ spec:
           secret:
             secretName: {{ $gcloudCredentials.kubernetesSecret }}
       {{- end }}
----
 {{ end }}
 {{- end -}}
