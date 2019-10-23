@@ -5,6 +5,10 @@
 replicaCount: 1
 environment: staging
 
+envFromSecret:
+  enabled: true
+  name: zergling-gitbot
+
 webapp:
   command:
     - gunicorn
@@ -50,6 +54,18 @@ continuousDeployments:
       name: docs-portal
       image: gcr.io/rehive-services/zergling-repository
       tag: 3c9ead9
+
+management:
+  enabled: true
+
+postgres:
+  enabled: false
+  host: localhost
+  port: 5432
+  user: postgres
+  secret:
+    key: postgres-password
+    name: postgres-zergling-gitbot
 
 resources:
   limits:

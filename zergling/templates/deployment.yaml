@@ -22,6 +22,25 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: {{ .Values.webapp.command }}
           args: {{ .Values.webapp.args }}
+          env:
+          {{- if .Values.postgres.enabled }}
+            - name: POSTGRES_HOST
+              value: "{{ .Values.postgres.host }}"
+            - name: POSTGRES_PORT
+              value: "{{ .Values.postgres.port }}"
+            - name: POSTGRES_USER
+              value: "{{ .Values.postgres.user }}"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.postgres.secret.name}}"
+                  key: "{{ .Values.postgres.secret.key}}"
+          {{- end }}
+          {{- if .Values.envFromSecret.enabled }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.envFromSecret.name | default (include "zergling.name" .) }}
+          {{- end }}
           ports:
             - name: {{ .Values.service.name }}
               containerPort: {{ .Values.service.internalPort }}
@@ -57,23 +76,6 @@ spec:
           env:
             - name: REHIVE_REPOSITORY
               value: {{ $repository.user }}/{{ $repository.name }}
-          livenessProbe:
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            exec:
-              command:
-                - git
-                - status
-                - --untracked-files=no
-          readinessProbe:
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            exec:
-              command:
-                - git
-                - fetch
-                - origin
-                - master
           resources:
             {{- toYaml $resources | nindent 12 }}
           volumeMounts:
@@ -83,13 +85,13 @@ spec:
             - name: {{ $repository.name }}-ssh-key
               mountPath: /zergling/.ssh/github.com/
               readOnly: false
-        {{- end}}
-        {{- end}}
+        {{- end }}
+        {{- end }}
       securityContext:
-        fsGroup: 420
+        fsGroup: 1001
         runAsNonRoot: true
-        runAsUser: 420
-        runAsGroup: 420
+        runAsUser: 1001
+        runAsGroup: 1001
       {{- if .Values.continuousDeployments.enabled }}
       {{- range $repository := .Values.continuousDeployments.repositories }}
       volumes:
@@ -117,3 +119,51 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+---
+{{- if .Values.management.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "zergling.fullname" . }}-management
+  labels:
+    {{ include "zergling.labels" . | nindent 4 }}
+spec:
+  restartPolicy: OnFailure
+  containers:
+  - name: management
+    image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+    imagePullPolicy: {{ .Values.image.pullPolicy }}
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -x;
+        python manage.py makemigrations zergling;
+        python manage.py migrate zergling;
+    env:
+    {{- if .Values.postgres.enabled }}
+      - name: POSTGRES_HOST
+        value: "{{ .Values.postgres.host }}"
+      - name: POSTGRES_PORT
+        value: "{{ .Values.postgres.port }}"
+      - name: POSTGRES_USER
+        value: "{{ .Values.postgres.user }}"
+      - name: POSTGRES_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: "{{ .Values.postgres.secret.name}}"
+            key: "{{ .Values.postgres.secret.key}}"
+    {{- end }}
+    {{- if .Values.envFromSecret.enabled }}
+    envFrom:
+      - secretRef:
+          name: {{ .Values.envFromSecret.name | default (include "zergling.name" .) }}
+    {{- end }}
+    resources:
+      requests:
+        memory: 1G
+        cpu: 266m
+      limits:
+        memory: 1G
+        cpu: 266m
+{{- end }}
