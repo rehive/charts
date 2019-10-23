@@ -8,9 +8,9 @@
 {{- $serviceName := include "fullname" . -}}
 {{- $revision := .Release.Revision -}}
 
-{{- if .Values.workersEnabled -}}
-{{- range $worker := .Values.workers }}
-apiVersion: extensions/v1beta1
+{{- if .Values.workers.enabled -}}
+{{- range $worker := .Values.workers.deployments }}
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ $worker.name }}
@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: {{ $worker.name }}
-        image: "{{ $repository }}:{{ $tag }}"
+        image: {{ $repository }}:{{ $tag }}
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: {{ $worker.internalPort }}
@@ -79,17 +79,18 @@ spec:
           - secretRef:
               name: {{ $serviceName }}
         resources:
-{{ toYaml $worker.resources | indent 10 }}
-{{- if $gcloudCredentials.enabled }}
+          {{ toYaml $worker.resources | nindent 10 }}
+        {{- if $gcloudCredentials.enabled }}
         volumeMounts:
           - name: {{ $gcloudCredentials.kubernetesSecret }}
             mountPath: /etc/credentials
             readOnly: true
+        {{- end }}
+      {{- if $gcloudCredentials.enabled }}
       volumes:
         - name: {{ $gcloudCredentials.kubernetesSecret }}
           secret:
             secretName: {{ $gcloudCredentials.kubernetesSecret }}
-{{- end }}
----
+      {{- end }}
 {{ end }}
 {{- end -}}
