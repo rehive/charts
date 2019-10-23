@@ -55,12 +55,7 @@ spec:
           name: {{ .Values.envFromSecret.secretName | default (include "fullname" .) }}
     {{- end }}
     resources:
-      requests:
-        memory: 1G
-        cpu: 266m
-      limits:
-        memory: 1G
-        cpu: 266m
+      {{ toYaml .Values.management.resources | nindent 10 }}
     {{- if .Values.gcloudCredentials.enabled }}
     volumeMounts:
       - name: {{ .Values.gcloudCredentials.kubernetesSecret }}

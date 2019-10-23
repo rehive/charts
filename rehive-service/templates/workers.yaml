@@ -8,8 +8,8 @@
 {{- $serviceName := include "fullname" . -}}
 {{- $revision := .Release.Revision -}}
 
-{{- if .Values.workersEnabled -}}
-{{- range $worker := .Values.workers }}
+{{- if .Values.workers.enabled -}}
+{{- range $worker := .Values.workers.deployments }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
