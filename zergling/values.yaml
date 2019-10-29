@@ -40,6 +40,19 @@ ingress:
       - zergling-gitbot.s.services.rehive.io
       secretName: zergling-gitbot-tls
 
+cleanup:
+  image:
+    repository: gcr.io/google-containers/hyperkube
+    tag: v1.13.7
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 266m
+      memory: 512Mi
+    requests:
+      cpu: 266m
+      memory: 128Mi
+
 continuousDeployments:
   enabled: false
   resources:
@@ -57,6 +70,13 @@ continuousDeployments:
 
 management:
   enabled: true
+  resources:
+    limits:
+      cpu: 266m
+      memory: 512Mi
+    requests:
+      cpu: 266m
+      memory: 128Mi
 
 postgres:
   enabled: false
@@ -67,13 +87,22 @@ postgres:
     key: postgres-password
     name: postgres-zergling-gitbot
 
+rabbitmq:
+  enabled: false
+  host: localhost
+  port: 5672
+  user: rabbit
+  secret:
+    name: rabbitmq-zergling-gitbot
+    key: rabbitmq-password
+
 resources:
   limits:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 200m
+    memory: 600Mi
   requests:
     cpu: 100m
-    memory: 128Mi
+    memory: 200Mi
 
 nodeSelector: {}
 

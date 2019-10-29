@@ -36,6 +36,19 @@ spec:
                   name: "{{ .Values.postgres.secret.name}}"
                   key: "{{ .Values.postgres.secret.key}}"
           {{- end }}
+          {{- if .Values.rabbitmq.enabled }}
+            - name: RABBITMQ_HOST
+              value: "{{ .Values.rabbitmq.host }}"
+            - name: RABBITMQ_PORT
+              value: "{{ .Values.rabbitmq.port }}"
+            - name: RABBITMQ_USER
+              value: "{{ .Values.rabbitmq.user }}"
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.rabbitmq.secret.name}}"
+                  key: "{{ .Values.rabbitmq.secret.key}}"
+          {{- end }}
           {{- if .Values.envFromSecret.enabled }}
           envFrom:
             - secretRef:
@@ -119,51 +132,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
----
-{{- if .Values.management.enabled }}
-apiVersion: v1
-kind: Pod
-metadata:
-  name: {{ include "zergling.fullname" . }}-management
-  labels:
-    {{ include "zergling.labels" . | nindent 4 }}
-spec:
-  restartPolicy: OnFailure
-  containers:
-  - name: management
-    image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-    imagePullPolicy: {{ .Values.image.pullPolicy }}
-    command:
-      - /bin/sh
-      - -c
-      - |
-        set -x;
-        python manage.py makemigrations zergling;
-        python manage.py migrate zergling;
-    env:
-    {{- if .Values.postgres.enabled }}
-      - name: POSTGRES_HOST
-        value: "{{ .Values.postgres.host }}"
-      - name: POSTGRES_PORT
-        value: "{{ .Values.postgres.port }}"
-      - name: POSTGRES_USER
-        value: "{{ .Values.postgres.user }}"
-      - name: POSTGRES_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: "{{ .Values.postgres.secret.name}}"
-            key: "{{ .Values.postgres.secret.key}}"
-    {{- end }}
-    {{- if .Values.envFromSecret.enabled }}
-    envFrom:
-      - secretRef:
-          name: {{ .Values.envFromSecret.name | default (include "zergling.name" .) }}
-    {{- end }}
-    resources:
-      requests:
-        memory: 1G
-        cpu: 266m
-      limits:
-        memory: 1G
-        cpu: 266m
-{{- end }}

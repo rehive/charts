@@ -1,0 +1,81 @@
+{{- if .Values.management.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "zergling.fullname" . }}-management
+  labels:
+    {{ include "zergling.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{ include "zergling.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: db-migrator
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - /bin/sh
+          - -c
+          - |
+            set -x;
+            python manage.py makemigrations zergling;
+            python manage.py migrate zergling;
+        env:
+        {{- if .Values.postgres.enabled }}
+          - name: POSTGRES_HOST
+            value: "{{ .Values.postgres.host }}"
+          - name: POSTGRES_PORT
+            value: "{{ .Values.postgres.port }}"
+          - name: POSTGRES_USER
+            value: "{{ .Values.postgres.user }}"
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.postgres.secret.name}}"
+                key: "{{ .Values.postgres.secret.key}}"
+        {{- end }}
+        {{- if .Values.envFromSecret.enabled }}
+        envFrom:
+          - secretRef:
+              name: {{ .Values.envFromSecret.name | default (include "zergling.name" .) }}
+        {{- end }}
+        resources:
+          {{ toYaml .Values.management.resources | nindent 10 }}
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "zergling.fullname" . }}-cleanup
+  labels:
+    {{ include "zergling.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        {{ include "zergling.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: job-cleanup
+        image: {{ .Values.cleanup.image.repository }}:{{ .Values.cleanup.image.tag }}
+        imagePullPolicy: {{ .Values.cleanup.image.pullPolicy }}
+        command:
+          - /bin/sh
+          - -c
+          - |
+            kubectl delete jobs --namespace {{ .Release.Namespace }} \
+                --selector app={{ include "zergling.name" . }},release={{ .Release.Name }}
+        resources:
+          {{ toYaml .Values.cleanup.resources | nindent 10 }}
+
+{{- end }}
+

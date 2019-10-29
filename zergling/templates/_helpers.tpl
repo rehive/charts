@@ -36,6 +36,7 @@ helm.sh/chart: {{ include "zergling.chart" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/component: server
 rehive.io/environment: {{ .Values.environment }}
+release: {{ .Release.Name }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
