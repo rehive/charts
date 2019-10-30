@@ -76,7 +76,7 @@ rabbitmq:
   enabled: false
   host: localhost
   port: 5672
-  user: rabbit
+  user: guest
   secret:
     name: rabbitmq-zergling-gitbot
     key: rabbitmq-password
