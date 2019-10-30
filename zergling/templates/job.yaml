@@ -4,6 +4,7 @@ kind: Job
 metadata:
   name: {{ include "zergling.fullname" . }}-management
   labels:
+    django-component: manager
     {{ include "zergling.labels" . | nindent 4 }}
 spec:
   template:
@@ -46,6 +47,7 @@ spec:
           {{ toYaml .Values.management.resources | nindent 10 }}
 
 ---
+{{- end }}
 
 apiVersion: batch/v1
 kind: Job
@@ -73,9 +75,9 @@ spec:
           - -c
           - |
             kubectl delete jobs --namespace {{ .Release.Namespace }} \
-                --selector app={{ include "zergling.name" . }},release={{ .Release.Name }}
+              --selector=django-component=manager
+            kubectl delete pods --namespace {{ .Release.Namespace }} \
+              --field-selector='status.phase!=Running' \
+              --selector='django-component=celery-tasks'
         resources:
           {{ toYaml .Values.cleanup.resources | nindent 10 }}
-
-{{- end }}
-

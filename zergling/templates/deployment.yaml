@@ -23,6 +23,7 @@ spec:
           command: {{ .Values.webapp.command }}
           args: {{ .Values.webapp.args }}
           env:
+
           {{- if .Values.postgres.enabled }}
             - name: POSTGRES_HOST
               value: "{{ .Values.postgres.host }}"
@@ -36,6 +37,7 @@ spec:
                   name: "{{ .Values.postgres.secret.name}}"
                   key: "{{ .Values.postgres.secret.key}}"
           {{- end }}
+
           {{- if .Values.rabbitmq.enabled }}
             - name: RABBITMQ_HOST
               value: "{{ .Values.rabbitmq.host }}"
@@ -49,11 +51,13 @@ spec:
                   name: "{{ .Values.rabbitmq.secret.name}}"
                   key: "{{ .Values.rabbitmq.secret.key}}"
           {{- end }}
+
           {{- if .Values.envFromSecret.enabled }}
           envFrom:
             - secretRef:
                 name: {{ .Values.envFromSecret.name | default (include "zergling.name" .) }}
           {{- end }}
+
           ports:
             - name: {{ .Values.service.name }}
               containerPort: {{ .Values.service.internalPort }}
@@ -72,54 +76,7 @@ spec:
               port: {{ .Values.service.internalPort }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.continuousDeployments.enabled }}
-          {{- range $repository := .Values.continuousDeployments.repositories }}
-          volumeMounts:
-            - name: {{ $repository.name }}-src
-              mountPath: /rehive/opt/{{ $repository.name }}
-              readOnly: false # To write build logs
-          {{- end }}
-          {{- end }}
-        {{- if .Values.continuousDeployments.enabled }}
-        {{- $resources := .Values.continuousDeployments.resources }}
-        {{- range $repository := .Values.continuousDeployments.repositories }}
-        - name: {{ $repository.name }}
-          image: {{ $repository.image }}:{{ $repository.tag }}
-          imagePullPolicy: Always
-          env:
-            - name: REHIVE_REPOSITORY
-              value: {{ $repository.user }}/{{ $repository.name }}
-          resources:
-            {{- toYaml $resources | nindent 12 }}
-          volumeMounts:
-            - name: {{ $repository.name }}-src
-              mountPath: /zergling/src
-              readOnly: false
-            - name: {{ $repository.name }}-ssh-key
-              mountPath: /zergling/.ssh/github.com/
-              readOnly: false
-        {{- end }}
-        {{- end }}
-      securityContext:
-        fsGroup: 1001
-        runAsNonRoot: true
-        runAsUser: 1001
-        runAsGroup: 1001
-      {{- if .Values.continuousDeployments.enabled }}
-      {{- range $repository := .Values.continuousDeployments.repositories }}
-      volumes:
-        - name: {{ $repository.name }}-src
-          emptyDir: {}
-        - name: {{ $repository.name }}-ssh-key
-          secret:
-            secretName: {{ $repository.name }}-ssh
-            defaultMode: 438
-            items:
-              - key: private-key
-                mode: 384
-                path: deploy/id_rsa
-      {{- end }}
-      {{- end }}
+
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -132,3 +89,5 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
+---

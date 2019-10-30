@@ -53,21 +53,6 @@ cleanup:
       cpu: 266m
       memory: 128Mi
 
-continuousDeployments:
-  enabled: false
-  resources:
-    limits:
-      cpu: 100m
-      memory: 128Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-  repositories:
-    - user: rehive
-      name: docs-portal
-      image: gcr.io/rehive-services/zergling-repository
-      tag: 3c9ead9
-
 management:
   enabled: true
   resources:
@@ -103,6 +88,19 @@ resources:
   requests:
     cpu: 100m
     memory: 200Mi
+
+celery:
+  enabled: false
+  workers:
+  - name: worker-receive
+    internalPort: 8000
+    replicaCount: 1
+    args:
+      app: config.celery worker
+      loglevel: INFO
+      concurrency: 1
+      queue: general-zergling
+    resources: {}
 
 nodeSelector: {}
 
