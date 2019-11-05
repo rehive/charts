@@ -50,6 +50,10 @@ continuousDeployments:
       name: docs-portal
       image: gcr.io/rehive-services/zergling-repository
       tag: 3c9ead9
+      livenessProbe:
+        enabled: False
+      readinessProbe:
+        enabled: False
 
 resources:
   limits:

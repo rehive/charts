@@ -57,6 +57,7 @@ spec:
           env:
             - name: REHIVE_REPOSITORY
               value: {{ $repository.user }}/{{ $repository.name }}
+          {{- if $repository.livenessProbe.enabled }}
           livenessProbe:
             initialDelaySeconds: 5
             periodSeconds: 10
@@ -65,6 +66,8 @@ spec:
                 - git
                 - status
                 - --untracked-files=no
+          {{- end }}
+          {{- if $repository.readinessProbe.enabled }}
           readinessProbe:
             initialDelaySeconds: 5
             periodSeconds: 10
@@ -74,6 +77,7 @@ spec:
                 - fetch
                 - origin
                 - master
+          {{- end }}
           resources:
             {{- toYaml $resources | nindent 12 }}
           volumeMounts:
