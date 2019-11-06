@@ -10,6 +10,7 @@ spec:
   template:
     metadata:
       labels:
+        django-component: manager
         {{ include "zergling.labels" . | nindent 8 }}
     spec:
       restartPolicy: OnFailure
@@ -25,19 +26,8 @@ spec:
             python manage.py makemigrations zergling;
             python manage.py migrate zergling;
         env:
-        {{- if .Values.postgres.enabled }}
-          - name: POSTGRES_HOST
-            value: "{{ .Values.postgres.host }}"
-          - name: POSTGRES_PORT
-            value: "{{ .Values.postgres.port }}"
-          - name: POSTGRES_USER
-            value: "{{ .Values.postgres.user }}"
-          - name: POSTGRES_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: "{{ .Values.postgres.secret.name}}"
-                key: "{{ .Values.postgres.secret.key}}"
-        {{- end }}
+          {{ include "zergling.plugins" . | nindent 10 }}
+
         {{- if .Values.envFromSecret.enabled }}
         envFrom:
           - secretRef:
@@ -56,9 +46,9 @@ metadata:
   labels:
     {{ include "zergling.labels" . | nindent 4 }}
   annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-weight": "0"
-    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook": "pre-upgrade"
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": "hook-succeeded"
 spec:
   template:
     metadata:
@@ -79,5 +69,8 @@ spec:
             kubectl delete pods --namespace {{ .Release.Namespace }} \
               --field-selector='status.phase!=Running' \
               --selector='django-component=celery-tasks'
+            kubectl delete pods --namespace {{ .Release.Namespace }} \
+              --field-selector='status.phase=Succeeded' \
+              --selector='django-component=manager'
         resources:
           {{ toYaml .Values.cleanup.resources | nindent 10 }}

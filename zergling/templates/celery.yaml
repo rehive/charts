@@ -1,11 +1,10 @@
 {{ $labels := include "zergling.labels" . }}
+{{ $plugins := include "zergling.plugins" . }}
 {{ $chartName := include "zergling.name" . }}
 {{ $releaseName := .Release.Name }}
 {{ $repository := .Values.image.repository }}
 {{ $tag := .Values.image.tag }}
 {{ $pullPolicy := .Values.image.pullPolicy }}
-{{ $postgres := .Values.postgres }}
-{{ $rabbitmq := .Values.rabbitmq }}
 {{ $envFromSecret := .Values.envFromSecret }}
 {{ $service := .Values.service }}
 {{ $nodeSelector := .Values.nodeSelector }}
@@ -51,34 +50,7 @@ spec:
             {{- end }}
             {{- end }}
           env:
-
-          {{- if $postgres.enabled }}
-            - name: POSTGRES_HOST
-              value: "{{ $postgres.host }}"
-            - name: POSTGRES_PORT
-              value: "{{ $postgres.port }}"
-            - name: POSTGRES_USER
-              value: "{{ $postgres.user }}"
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ $postgres.secret.name }}"
-                  key: "{{ $postgres.secret.key }}"
-          {{- end }}
-
-          {{- if $rabbitmq.enabled }}
-            - name: RABBITMQ_HOST
-              value: "{{ $rabbitmq.host }}"
-            - name: RABBITMQ_PORT
-              value: "{{ $rabbitmq.port }}"
-            - name: RABBITMQ_USER
-              value: "{{ $rabbitmq.user }}"
-            - name: RABBITMQ_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ $rabbitmq.secret.name }}"
-                  key: "{{ $rabbitmq.secret.key }}"
-          {{- end }}
+            {{ $plugins | nindent 12 }}
 
           {{- if $envFromSecret.enabled }}
           envFrom:
@@ -86,22 +58,6 @@ spec:
                 name: {{ $envFromSecret.name | default ($chartName) }}
           {{- end }}
 
-          ports:
-            - name: {{ $service.name }}
-              containerPort: {{ $worker.internalPort }}
-              protocol: TCP
-          livenessProbe:
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            httpGet:
-              path: /healthz
-              port: {{ $worker.internalPort }}
-          readinessProbe:
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            httpGet:
-              path: /readiness
-              port: {{ $worker.internalPort }}
           resources:
             {{- toYaml $worker.resources | nindent 12 }}
 

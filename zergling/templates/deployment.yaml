@@ -20,37 +20,12 @@ spec:
         - name: webapp
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: {{ .Values.webapp.command }}
-          args: {{ .Values.webapp.args }}
+          command:
+            {{- toYaml .Values.webapp.command | nindent 12 }}
+          args:
+            {{- toYaml .Values.webapp.args | nindent 12 }}
           env:
-
-          {{- if .Values.postgres.enabled }}
-            - name: POSTGRES_HOST
-              value: "{{ .Values.postgres.host }}"
-            - name: POSTGRES_PORT
-              value: "{{ .Values.postgres.port }}"
-            - name: POSTGRES_USER
-              value: "{{ .Values.postgres.user }}"
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.postgres.secret.name}}"
-                  key: "{{ .Values.postgres.secret.key}}"
-          {{- end }}
-
-          {{- if .Values.rabbitmq.enabled }}
-            - name: RABBITMQ_HOST
-              value: "{{ .Values.rabbitmq.host }}"
-            - name: RABBITMQ_PORT
-              value: "{{ .Values.rabbitmq.port }}"
-            - name: RABBITMQ_USER
-              value: "{{ .Values.rabbitmq.user }}"
-            - name: RABBITMQ_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.rabbitmq.secret.name}}"
-                  key: "{{ .Values.rabbitmq.secret.key}}"
-          {{- end }}
+            {{ include "zergling.plugins" . | nindent 12 }}
 
           {{- if .Values.envFromSecret.enabled }}
           envFrom:

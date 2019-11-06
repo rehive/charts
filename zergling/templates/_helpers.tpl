@@ -42,3 +42,37 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
+
+
+{{/*
+Environment Variables
+*/}}
+{{- define "zergling.plugins" -}}
+{{- if .Values.postgres.enabled }}
+- name: POSTGRES_HOST
+  value: {{ .Values.postgres.host }}
+- name: POSTGRES_PORT
+  value: {{ .Values.postgres.port | quote }}
+- name: POSTGRES_USER
+  value: {{ .Values.postgres.user }}
+- name: POSTGRES_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.postgres.secret.name }}
+      key: {{ .Values.postgres.secret.key }}
+{{- end }}
+{{- if .Values.rabbitmq.enabled }}
+- name: RABBITMQ_HOST
+  value: {{ .Values.rabbitmq.host }}
+- name: RABBITMQ_PORT
+  value: {{ .Values.rabbitmq.port | quote }}
+- name: RABBITMQ_USER
+  value: {{ .Values.rabbitmq.user }}
+- name: RABBITMQ_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.rabbitmq.secret.name }}
+      key: {{ .Values.rabbitmq.secret.key }}
+{{- end }}
+{{- end -}}
+
