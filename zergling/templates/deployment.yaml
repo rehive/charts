@@ -25,6 +25,10 @@ spec:
           args:
             {{- toYaml .Values.webapp.args | nindent 12 }}
           env:
+            - name: POD_ENVIRONMENT
+              value: {{ .Values.environment }}
+            - name: POD_NAMESPACE
+              value: {{ .Release.Namespace }}
             {{ include "zergling.plugins" . | nindent 12 }}
 
           {{- if .Values.envFromSecret.enabled }}

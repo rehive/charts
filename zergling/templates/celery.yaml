@@ -1,14 +1,16 @@
 {{ $labels := include "zergling.labels" . }}
-{{ $plugins := include "zergling.plugins" . }}
 {{ $chartName := include "zergling.name" . }}
-{{ $releaseName := .Release.Name }}
-{{ $repository := .Values.image.repository }}
-{{ $tag := .Values.image.tag }}
-{{ $pullPolicy := .Values.image.pullPolicy }}
-{{ $envFromSecret := .Values.envFromSecret }}
-{{ $service := .Values.service }}
-{{ $nodeSelector := .Values.nodeSelector }}
+{{ $plugins := include "zergling.plugins" . }}
 {{ $affinity := .Values.affinity }}
+{{ $envFromSecret := .Values.envFromSecret }}
+{{ $environment := .Values.environment }}
+{{ $nodeSelector := .Values.nodeSelector }}
+{{ $pullPolicy := .Values.image.pullPolicy }}
+{{ $releaseName := .Release.Name }}
+{{ $releaseNamespace := .Release.Namespace }}
+{{ $repository := .Values.image.repository }}
+{{ $service := .Values.service }}
+{{ $tag := .Values.image.tag }}
 {{ $tolerations := .Values.tolerations }}
 
 
@@ -50,6 +52,10 @@ spec:
             {{- end }}
             {{- end }}
           env:
+            - name: POD_ENVIRONMENT
+              value: {{ $environment }}
+            - name: POD_NAMESPACE
+              value: {{ $releaseNamespace }}
             {{ $plugins | nindent 12 }}
 
           {{- if $envFromSecret.enabled }}

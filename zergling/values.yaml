@@ -22,6 +22,11 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
+continuousDeployment:
+  enabled: true
+  repository: gcr.io/rehive-services/zergling-repository
+  tag: latest
+
 service:
   name: nginx
   type: ClusterIP

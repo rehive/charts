@@ -26,6 +26,10 @@ spec:
             python manage.py makemigrations zergling;
             python manage.py migrate zergling;
         env:
+          - name: POD_ENVIRONMENT
+            value: {{ .Values.environment }}
+          - name: POD_NAMESPACE
+            value: {{ .Release.Namespace }}
           {{ include "zergling.plugins" . | nindent 10 }}
 
         {{- if .Values.envFromSecret.enabled }}

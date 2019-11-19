@@ -61,6 +61,12 @@ Environment Variables
       name: {{ .Values.postgres.secret.name }}
       key: {{ .Values.postgres.secret.key }}
 {{- end }}
+{{- if .Values.continuousDeployment.enabled }}
+- name: REPOSITORY_IMAGE
+  value: {{ .Values.continuousDeployment.repository }}
+- name: REPOSITORY_TAG
+  value: {{ .Values.continuousDeployment.tag }}
+{{- end }}
 {{- if .Values.rabbitmq.enabled }}
 - name: RABBITMQ_HOST
   value: {{ .Values.rabbitmq.host }}
