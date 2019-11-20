@@ -51,21 +51,26 @@ bootstrapParameters:
     retry_timeout: 30
 
 walE:
-  enable: false
+  enabled: false
   envDir: /home/postgres/etc/wal-e.d/env
   scheduleCronJob: 00 01 * * *
   retainBackups: 2
   s3Bucket:
-  kubernetesSecret:
   gcsBucket: # the bucket name created with rdeploy create_bucket
+  gcloudCredentials: "gcloud-wale.json"
   backupThresholdMegabytes: 1024
   backupThresholdPercentage: 30
 
+gcloudCredentials:
+  enabled: false
+  secretName: "gcloud-wale"
+
 cloneWithWale:
-  enable: false
+  enabled: false
   cloneWalGcsBucket: ""
   cloneScope: ""
   cloneTargetTime: ""
+  gcloudCredentials: "gcloud-wale.json"
 
 persistentVolume:
   enabled: true

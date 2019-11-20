@@ -33,6 +33,11 @@ spec:
         - name: spilo
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - '/bin/sh'
+          args:
+            - '/launch.sh'
+            - init
           env:
             - name: DEBUG
               value: {{ .Values.debug | quote }}
@@ -73,9 +78,9 @@ spec:
                   key: password-standby
             - name: PGROOT
               value: /home/postgres/pgdata
-            {{ if .Values.walE.enable }}
+            {{ if .Values.walE.enabled }}
             - name: USE_WALE
-              value: {{ .Values.walE.enable | quote }}
+              value: {{ .Values.walE.enabled | quote }}
             {{ if .Values.walE.envDir }}
             - name: WALE_ENV_DIR
               value: {{ .Values.walE.envDir | quote }}
@@ -94,10 +99,6 @@ spec:
             {{ else if .Values.walE.gcsBucket }}
             - name: WAL_GCS_BUCKET
               value: {{ .Values.walE.gcsBucket | quote }}
-            {{ if .Values.walE.kubernetesSecret }}
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: "/etc/credentials/{{ .Values.walE.kubernetesSecret }}.json"
-            {{ end }}
             {{ end }}
             {{ if .Values.walE.backupThresholdMegabytes }}
             - name: WALE_BACKUP_THRESHOLD_MEGABYTES
@@ -107,8 +108,12 @@ spec:
             - name: WALE_BACKUP_THRESHOLD_PERCENTAGE
               value: {{ .Values.walE.backupThresholdPercentage | quote }}
             {{ end }}
+            {{ if .Values.gcloudCredentials.enabled }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/credentials/{{ .Values.walE.gcloudCredentials }}"
             {{ end }}
-            {{ if .Values.cloneWithWale.enable }}
+            {{ end }}
+            {{ if .Values.cloneWithWale.enabled }}
             - name: CLONE_WITH_WALE
               value: "true"
             - name: CLONE_WAL_GCS_BUCKET
@@ -119,6 +124,10 @@ spec:
               value: "CLONE_WITH_WALE"
             - name: CLONE_TARGET_TIME
               value: {{ .Values.cloneWithWale.cloneTargetTime | quote }}
+            {{ if .Values.gcloudCredentials.enabled }}
+            - name: CLONE_GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/credentials/{{ .Values.cloneWithWale.gcloudCredentials }}"
+            {{ end }}
             {{ end }}
           ports:
             - containerPort: 8008
@@ -134,16 +143,16 @@ spec:
               mountPath: /home/postgres/pgdata
             - name: patroni-config
               mountPath: /etc/patronictl
-            {{ if and .Values.walE.enable .Values.walE.kubernetesSecret }}
-            - name: {{ .Values.walE.kubernetesSecret }}
+            {{ if .Values.gcloudCredentials.enabled }}
+            - name: {{ .Values.gcloudCredentials.secretName }}
               mountPath: /etc/credentials
               readOnly: true
             {{ end }}
       volumes:
-        {{ if and .Values.walE.enable .Values.walE.kubernetesSecret }}
-        - name: {{ .Values.walE.kubernetesSecret }}
+        {{ if .Values.gcloudCredentials.enabled }}
+        - name: {{ .Values.gcloudCredentials.secretName }}
           secret:
-            secretName: {{ .Values.walE.kubernetesSecret }}
+            secretName: {{ .Values.gcloudCredentials.secretName }}
         {{ end }}
         - name: patroni-config
           configMap:
