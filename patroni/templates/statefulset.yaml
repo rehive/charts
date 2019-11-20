@@ -27,6 +27,8 @@ spec:
         cluster: {{ template "patroni.fullname" . }}
     spec:
       serviceAccountName: {{ template "patroni.serviceAccountName" . }}
+      imagePullSecrets:
+      - name: gcrio-credentials
       containers:
         - name: spilo
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -46,23 +48,12 @@ spec:
               value: "true"
             - name: WAL_BUCKET_SCOPE_PREFIX
               value: ""
-          {{- if .Values.useConfigMaps }}
+            {{- if .Values.useConfigMaps }}
             - name: KUBERNETES_USE_CONFIGMAPS
               value: "true"
-          {{- end }}
-            - name: PATRONI_CONFIGURATION
-              value: |
-                kubernetes:
-                  labels:
-                    app: {{ template "patroni.name" . }}
-                    release: {{ .Release.Name }}
-                    application: {{ template "patroni.name" . }}
-                    cluster: {{ template "patroni.fullname" . }}
-                  scope_label: cluster
-                postgresql:
-{{ toYaml .Values.postgresParameters | indent 18 }}
-                bootstrap:
-{{ toYaml .Values.bootstrapParameters | indent 18 }}
+            {{- end }}
+            - name: PATRONI_CONFIGURATION_FILE
+              value: /etc/patronictl/patronictl.yaml
             - name: SCOPE
               value: {{ template "patroni.fullname" . }}
             - name: PGPASSWORD_SUPERUSER
@@ -82,55 +73,53 @@ spec:
                   key: password-standby
             - name: PGROOT
               value: /home/postgres/pgdata
-        {{ if .Values.walE.enable }}
+            {{ if .Values.walE.enable }}
             - name: USE_WALE
               value: {{ .Values.walE.enable | quote }}
-          {{ if .Values.walE.envDir }}
+            {{ if .Values.walE.envDir }}
             - name: WALE_ENV_DIR
               value: {{ .Values.walE.envDir | quote }}
-          {{ end }}
-          {{ if .Values.walE.scheduleCronJob }}
+            {{ end }}
+            {{ if .Values.walE.scheduleCronJob }}
             - name: BACKUP_SCHEDULE
               value: {{ .Values.walE.scheduleCronJob | quote }}
-          {{ end }}
-          {{ if .Values.walE.retainBackups }}
+            {{ end }}
+            {{ if .Values.walE.retainBackups }}
             - name: BACKUP_NUM_TO_RETAIN
               value: {{ .Values.walE.retainBackups | quote }}
-          {{ end }}
-          {{ if .Values.walE.s3Bucket }}
+            {{ end }}
+            {{ if .Values.walE.s3Bucket }}
             - name: WAL_S3_BUCKET
               value: {{ .Values.walE.s3Bucket | quote }}
-          {{ else if .Values.walE.gcsBucket }}
+            {{ else if .Values.walE.gcsBucket }}
             - name: WAL_GCS_BUCKET
               value: {{ .Values.walE.gcsBucket | quote }}
             {{ if .Values.walE.kubernetesSecret }}
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/etc/credentials/{{ .Values.walE.kubernetesSecret }}.json"
             {{ end }}
-          {{ end }}
-          {{ if .Values.walE.backupThresholdMegabytes }}
+            {{ end }}
+            {{ if .Values.walE.backupThresholdMegabytes }}
             - name: WALE_BACKUP_THRESHOLD_MEGABYTES
               value: {{ .Values.walE.backupThresholdMegabytes | quote }}
-          {{ end }}
-          {{ if .Values.walE.backupThresholdPercentage }}
+            {{ end }}
+            {{ if .Values.walE.backupThresholdPercentage }}
             - name: WALE_BACKUP_THRESHOLD_PERCENTAGE
               value: {{ .Values.walE.backupThresholdPercentage | quote }}
-          {{ end }}
-        {{ end }}
-        {{ if .Values.cloneWithWale.enable }}
+            {{ end }}
+            {{ end }}
+            {{ if .Values.cloneWithWale.enable }}
             - name: CLONE_WITH_WALE
               value: "true"
-            - name: CLONE_WALE_ENV_DIR
-              value: {{ .Values.cloneWithWale.cloneWaleEnvDir | quote }}
             - name: CLONE_WAL_GCS_BUCKET
-              value: {{ .Values.cloneWithWale.cloneWalGcsBucket | quote }}
-            - name: CLONE_WAL_GSC_BUCKET # Mistake in spilo
               value: {{ .Values.cloneWithWale.cloneWalGcsBucket | quote }}
             - name: CLONE_SCOPE
               value: {{ .Values.cloneWithWale.cloneScope | quote }}
             - name: CLONE_METHOD
               value: "CLONE_WITH_WALE"
-        {{ end }}
+            - name: CLONE_TARGET_TIME
+              value: {{ .Values.cloneWithWale.cloneTargetTime | quote }}
+            {{ end }}
           ports:
             - containerPort: 8008
               name: patroni
@@ -139,30 +128,35 @@ spec:
               name: postgresql
               protocol: TCP
           resources:
-{{ toYaml .Values.resources | indent 12 }}
+            {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: datadir
               mountPath: /home/postgres/pgdata
-          {{ if and .Values.walE.enable .Values.walE.kubernetesSecret }}
+            - name: patroni-config
+              mountPath: /etc/patronictl
+            {{ if and .Values.walE.enable .Values.walE.kubernetesSecret }}
             - name: {{ .Values.walE.kubernetesSecret }}
               mountPath: /etc/credentials
               readOnly: true
-        {{ end }}
+            {{ end }}
       volumes:
-      {{ if and .Values.walE.enable .Values.walE.kubernetesSecret }}
+        {{ if and .Values.walE.enable .Values.walE.kubernetesSecret }}
         - name: {{ .Values.walE.kubernetesSecret }}
           secret:
             secretName: {{ .Values.walE.kubernetesSecret }}
-      {{ end }}
-    {{- if .Values.nodeSelector }}
+        {{ end }}
+        - name: patroni-config
+          configMap:
+            name: {{ template "patroni.fullname" . }}-configmap
+      {{- if .Values.nodeSelector }}
       nodeSelector:
-{{ toYaml .Values.nodeSelector | indent 8 }}
-    {{- end }}
-    {{- if .Values.tolerations }}
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
       tolerations:
-{{ toYaml .Values.tolerations | indent 8 }}
-    {{ end }}
-    {{- if eq .Values.podAntiAffinity "hard" }}
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      {{ end }}
+      {{- if eq .Values.podAntiAffinity "hard" }}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -171,7 +165,7 @@ spec:
                 matchLabels:
                   app: "{{ template "patroni.name" . }}"
                   release: "{{ .Release.Name }}"
-    {{- else if eq .Values.podAntiAffinity "soft" }}
+      {{- else if eq .Values.podAntiAffinity "soft" }}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -182,14 +176,14 @@ spec:
                   matchLabels:
                     app: "{{ template "patroni.name" . }}"
                     release: "{{ .Release.Name }}"
-    {{- end }}
-{{ if .Values.persistentVolume.enabled }}
+      {{- end }}
+  {{ if .Values.persistentVolume.enabled }}
   volumeClaimTemplates:
     - metadata:
         name: datadir
       {{- if .Values.persistentVolume.annotations }}
         annotations:
-{{ toYaml .Values.persistentVolume.annotations | indent 10 }}
+          {{- toYaml .Values.persistentVolume.annotations | nindent 10 }}
       {{- end }}
       spec:
         accessModes:
@@ -199,14 +193,14 @@ spec:
         resources:
           requests:
             storage: {{ .Values.persistentVolume.size | quote }}
-    {{- if .Values.persistentVolume.storageClass }}
-      {{- if (eq "-" .Values.persistentVolume.storageClass) }}
+        {{- if .Values.persistentVolume.storageClass }}
+        {{- if (eq "-" .Values.persistentVolume.storageClass) }}
         storageClassName: ""
-      {{- else }}
+        {{- else }}
         storageClassName: "{{ .Values.persistentVolume.storageClass }}"
-      {{- end }}
-    {{- end }}
-{{- else }}
+        {{- end }}
+        {{- end }}
+        {{- else }}
         - name: datadir
           emptyDir: {}
 {{- end }}

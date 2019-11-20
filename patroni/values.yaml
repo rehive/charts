@@ -63,9 +63,9 @@ walE:
 
 cloneWithWale:
   enable: false
-  cloneWaleEnvDir: /home/postgres/etc/wal-e-clone.d/env
-  cloneWalGcsBucket:
-  cloneScope:
+  cloneWalGcsBucket: ""
+  cloneScope: ""
+  cloneTargetTime: ""
 
 persistentVolume:
   enabled: true
@@ -83,9 +83,9 @@ persistentVolume:
 
 cleanup:
   image:
-    repository: quay.io/coreos/hyperkube
-    tag: v1.8.4_coreos.0
     pullPolicy: IfNotPresent
+    repository: gcr.io/google-containers/hyperkube
+    tag: v1.13.7
 
 ## Create RBAC policy for patroni
 rbac:

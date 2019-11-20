@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "patroni.fullname" . }}-configmap
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "patroni.name" . }}
+    chart: {{ template "patroni.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    application: {{ template "patroni.name" . }}
+    cluster: {{ template "patroni.fullname" . }}
+data:
+  patronictl.yaml : |
+    kubernetes:
+      labels:
+        app: {{ template "patroni.name" . }}
+        release: {{ .Release.Name }}
+        application: {{ template "patroni.name" . }}
+        cluster: {{ template "patroni.fullname" . }}
+      scope_label: cluster
+    postgresql:
+      {{- toYaml .Values.postgresParameters | nindent 6 }}
+    bootstrap:
+      {{- toYaml .Values.bootstrapParameters | nindent 6 }}
