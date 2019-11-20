@@ -1,15 +1,14 @@
 name: patroni
 description: 'Highly available elephant herd: HA PostgreSQL cluster.'
-version: 0.8.1
-appVersion: 1.5-p5
+version: 0.8.2
+appVersion: 1.6-p1
 home: https://github.com/zalando/patroni
 sources:
 - https://github.com/zalando/patroni
 - https://github.com/zalando/spilo
+- https://github.com/kidynamit/spilo
 maintainers:
-- name: alexeyklyukin
-  email: team-acid@zalando.de
-- name: linki
-  email: team-teapot@zalando.de
 - name: michailbrynard
   email: info@rehive.com
+- name: kidynamit
+  email: mwangi@rehive.com
