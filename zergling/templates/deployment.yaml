@@ -20,8 +20,23 @@ spec:
         - name: webapp
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: {{ .Values.webapp.command }}
-          args: {{ .Values.webapp.args }}
+          command:
+            {{- toYaml .Values.webapp.command | nindent 12 }}
+          args:
+            {{- toYaml .Values.webapp.args | nindent 12 }}
+          env:
+            - name: POD_ENVIRONMENT
+              value: {{ .Values.environment }}
+            - name: POD_NAMESPACE
+              value: {{ .Release.Namespace }}
+            {{ include "zergling.plugins" . | nindent 12 }}
+
+          {{- if .Values.envFromSecret.enabled }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.envFromSecret.name | default (include "zergling.name" .) }}
+          {{- end }}
+
           ports:
             - name: {{ .Values.service.name }}
               containerPort: {{ .Values.service.internalPort }}
@@ -40,75 +55,6 @@ spec:
               port: {{ .Values.service.internalPort }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.continuousDeployments.enabled }}
-          {{- range $repository := .Values.continuousDeployments.repositories }}
-          volumeMounts:
-            - name: {{ $repository.name }}-src
-              mountPath: /rehive/opt/{{ $repository.name }}
-              readOnly: false # To write build logs
-          {{- end }}
-          {{- end }}
-        {{- if .Values.continuousDeployments.enabled }}
-        {{- $resources := .Values.continuousDeployments.resources }}
-        {{- range $repository := .Values.continuousDeployments.repositories }}
-        - name: {{ $repository.name }}
-          image: {{ $repository.image }}:{{ $repository.tag }}
-          imagePullPolicy: Always
-          env:
-            - name: REHIVE_REPOSITORY
-              value: {{ $repository.user }}/{{ $repository.name }}
-          {{- if $repository.livenessProbe.enabled }}
-          livenessProbe:
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            exec:
-              command:
-                - git
-                - status
-                - --untracked-files=no
-          {{- end }}
-          {{- if $repository.readinessProbe.enabled }}
-          readinessProbe:
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            exec:
-              command:
-                - git
-                - fetch
-                - origin
-                - master
-          {{- end }}
-          resources:
-            {{- toYaml $resources | nindent 12 }}
-          volumeMounts:
-            - name: {{ $repository.name }}-src
-              mountPath: /zergling/src
-              readOnly: false
-            - name: {{ $repository.name }}-ssh-key
-              mountPath: /zergling/.ssh/github.com/
-              readOnly: false
-        {{- end}}
-        {{- end}}
-      securityContext:
-        fsGroup: 420
-        runAsNonRoot: true
-        runAsUser: 420
-        runAsGroup: 420
-      {{- if .Values.continuousDeployments.enabled }}
-      {{- range $repository := .Values.continuousDeployments.repositories }}
-      volumes:
-        - name: {{ $repository.name }}-src
-          emptyDir: {}
-        - name: {{ $repository.name }}-ssh-key
-          secret:
-            secretName: {{ $repository.name }}-ssh
-            defaultMode: 438
-            items:
-              - key: private-key
-                mode: 384
-                path: deploy/id_rsa
-      {{- end }}
-      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -121,3 +67,5 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
+---

@@ -1,0 +1,85 @@
+{{ $labels := include "zergling.labels" . }}
+{{ $chartName := include "zergling.name" . }}
+{{ $plugins := include "zergling.plugins" . }}
+{{ $affinity := .Values.affinity }}
+{{ $envFromSecret := .Values.envFromSecret }}
+{{ $environment := .Values.environment }}
+{{ $nodeSelector := .Values.nodeSelector }}
+{{ $pullPolicy := .Values.image.pullPolicy }}
+{{ $releaseName := .Release.Name }}
+{{ $releaseNamespace := .Release.Namespace }}
+{{ $repository := .Values.image.repository }}
+{{ $service := .Values.service }}
+{{ $tag := .Values.image.tag }}
+{{ $tolerations := .Values.tolerations }}
+
+
+{{- if .Values.celery.enabled }}
+{{- range $worker := .Values.celery.workers }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $worker.name }}
+  labels:
+    {{ $labels | nindent 4 }}
+spec:
+  replicas: {{ $worker.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $chartName }}
+      app.kubernetes.io/instance: {{ $releaseName }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $chartName }}
+        app.kubernetes.io/instance: {{ $releaseName }}
+        {{ $labels | nindent 8 }}
+        django-component: celery-worker
+    spec:
+      containers:
+        - name: {{ $worker.name }}
+          image: {{ $repository }}:{{ $tag }}
+          imagePullPolicy: {{ $pullPolicy }}
+          command:
+            - celery
+            - worker
+          args:
+            {{- range $key, $value := $worker.args }}
+            {{- if $value }}
+            - --{{ $key }}={{ $value }}
+            {{- else }}
+            - --{{ $key }}
+            {{- end }}
+            {{- end }}
+          env:
+            - name: POD_ENVIRONMENT
+              value: {{ $environment }}
+            - name: POD_NAMESPACE
+              value: {{ $releaseNamespace }}
+            {{ $plugins | nindent 12 }}
+
+          {{- if $envFromSecret.enabled }}
+          envFrom:
+            - secretRef:
+                name: {{ $envFromSecret.name | default ($chartName) }}
+          {{- end }}
+
+          resources:
+            {{- toYaml $worker.resources | nindent 12 }}
+
+      {{- with $nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+---
+{{- end }}
+{{- end}}

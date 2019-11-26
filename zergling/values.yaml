@@ -5,6 +5,10 @@
 replicaCount: 1
 environment: staging
 
+envFromSecret:
+  enabled: true
+  name: zergling-gitbot
+
 webapp:
   command:
     - gunicorn
@@ -17,6 +21,11 @@ image:
   repository: gcr.io/rehive-services/zergling-gitbot
   tag: latest
   pullPolicy: IfNotPresent
+
+continuousDeployment:
+  enabled: true
+  repository: gcr.io/rehive-services/zergling-repository
+  tag: latest
 
 service:
   name: nginx
@@ -36,32 +45,67 @@ ingress:
       - zergling-gitbot.s.services.rehive.io
       secretName: zergling-gitbot-tls
 
-continuousDeployments:
-  enabled: false
+cleanup:
+  image:
+    repository: gcr.io/google-containers/hyperkube
+    tag: v1.13.7
+    pullPolicy: IfNotPresent
   resources:
     limits:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 266m
+      memory: 512Mi
     requests:
-      cpu: 100m
+      cpu: 266m
       memory: 128Mi
-  repositories:
-    - user: rehive
-      name: docs-portal
-      image: gcr.io/rehive-services/zergling-repository
-      tag: 3c9ead9
-      livenessProbe:
-        enabled: False
-      readinessProbe:
-        enabled: False
+
+management:
+  enabled: true
+  resources:
+    limits:
+      cpu: 266m
+      memory: 512Mi
+    requests:
+      cpu: 266m
+      memory: 128Mi
+
+postgres:
+  enabled: false
+  host: localhost
+  port: 5432
+  user: postgres
+  secret:
+    key: postgres-password
+    name: postgres-zergling-gitbot
+
+rabbitmq:
+  enabled: false
+  host: localhost
+  port: 5672
+  user: guest
+  secret:
+    name: rabbitmq-zergling-gitbot
+    key: rabbitmq-password
 
 resources:
   limits:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 200m
+    memory: 600Mi
   requests:
     cpu: 100m
-    memory: 128Mi
+    memory: 200Mi
+
+celery:
+  enabled: false
+  workers:
+  - name: worker-receive
+    internalPort: 8000
+    replicaCount: 1
+    args:
+      app: config.celery worker
+      loglevel: INFO
+      concurrency: 1
+      queue: general-zergling
+    resources: {}
 
 nodeSelector: {}
 
