@@ -4,11 +4,13 @@
 deployment:
   replicaCount: 3
   resources: {}
-  command:
+  command: []
+
 image:
   repository: rehive/example
-  tag: 0.001
+  tag: latest
   pullPolicy: IfNotPresent
+
 service:
   name: nginx
   type: ClusterIP
@@ -16,10 +18,14 @@ service:
   internalPort: 8000
   readinessProbe:
   livenessProbe:
+
 envFromSecret:
   enabled: true
+
 management:
   enabled: true
+  resources: {}
+
 ingress:
   enabled: true
   hosts:
@@ -30,9 +36,8 @@ ingress:
   tls:
     - hosts:
       - example.services.rehive.io
-      secretName: stellar-service-tls
-  hosts:
-    - example.services.rehive.io
+      secretName: example-service-tls
+
 postgres:
   enabled: false
   host: patroni-example-patroni.example-namespace.svc.cluster.local
@@ -41,6 +46,7 @@ postgres:
   secret:
     name: patroni-example-patroni
     key: password-admin
+
 redis:
   enabled: false
   host: redis-example-redis.example-namespace.svc.cluster.local
@@ -48,6 +54,7 @@ redis:
   secret:
     name: redis-example-redis
     key: rabbitmq-password
+
 rabbitmq:
   enabled: false
   host: patroni-example-patroni.example-namespace.svc.cluster.local
@@ -55,13 +62,16 @@ rabbitmq:
   secret:
     name: rabbitmq-example-rabbitmq-ha
     key: rabbitmq-password
+
 gcloudCredentials:
   enabled: false
   kubernetesSecret: gcloud_credentials
-workersEnabled: false
+
 workers:
+  enabled: false
+  deployments:
   - name: worker-receive
     internalPort: 8000
     replicaCount: 1
     command: ['/bin/sh','-c', 'celery -A config.celery worker --loglevel=INFO --concurrency=1 -Q general-example']
-    requests: {}
+    resources: {}
