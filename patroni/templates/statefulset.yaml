@@ -27,17 +27,22 @@ spec:
         cluster: {{ template "patroni.fullname" . }}
     spec:
       serviceAccountName: {{ template "patroni.serviceAccountName" . }}
-      imagePullSecrets:
-      - name: gcrio-credentials
       containers:
         - name: spilo
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.image.init }}
           command:
             - '/bin/sh'
           args:
             - '/launch.sh'
             - init
+          {{- else }}
+          command:
+            {{- toYaml .Values.image.command | nindent 12 }}
+          args:
+            {{- toYaml .Values.image.args | nindent 12 }}
+          {{- end}}
           env:
             - name: DEBUG
               value: {{ .Values.debug | quote }}
