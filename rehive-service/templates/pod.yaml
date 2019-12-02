@@ -2,9 +2,10 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ template "fullname" . }}-management"
+  name: "{{ template "rehive-service.fullname" . }}-management"
   labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    django-component: "management"
+    {{ include "rehive-service.labels" . | nindent 4 }}
   annotations:
     helm/revision: "{{ .Release.Revision }}" # Hack to force restart on upgrade
 spec:
@@ -52,7 +53,7 @@ spec:
     {{- if .Values.envFromSecret.enabled }}
     envFrom:
       - secretRef:
-          name: {{ .Values.envFromSecret.secretName | default (include "fullname" .) }}
+          name: {{ .Values.envFromSecret.secretName | default (include "rehive-service.fullname" .) }}
     {{- end }}
     resources:
       {{ toYaml .Values.management.resources | nindent 10 }}

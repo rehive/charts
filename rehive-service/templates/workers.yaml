@@ -1,20 +1,27 @@
-{{- $replicaCount := .Values.deployment.replicaCount -}}
-{{- $repository := .Values.image.repository -}}
+{{- $chartName := include "rehive-service.name" . }}
+{{- $gcloudCredentials := .Values.gcloudCredentials -}}
+{{- $labels := include "rehive-service.labels" . }}
 {{- $postgres := .Values.postgres -}}
 {{- $rabbitmq := .Values.rabbitmq -}}
 {{- $redis := .Values.redis -}}
-{{- $gcloudCredentials := .Values.gcloudCredentials -}}
-{{- $tag := .Values.image.tag -}}
-{{- $serviceName := include "fullname" . -}}
+{{- $releaseName := .Release.Name -}}
+{{- $replicaCount := .Values.deployment.replicaCount -}}
+{{- $repository := .Values.image.repository -}}
 {{- $revision := .Release.Revision -}}
+{{- $serviceName := include "rehive-service.fullname" . -}}
+{{- $tag := .Values.image.tag -}}
 
 {{- if .Values.workers.enabled -}}
-{{- range $worker := .Values.workers.deployments }}
+{{- range $worker := .Values.workers.deployments -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ $worker.name }}
 spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $chartName }}
+      app.kubernetes.io/instance: {{ $releaseName }}
   replicas: {{ $worker.replicaCount }}
   strategy:
     type: RollingUpdate
@@ -24,7 +31,10 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ $worker.name }}
+        app.kubernetes.io/name: {{ $chartName }}
+        app.kubernetes.io/instance: {{ $releaseName }}
+        {{ $labels | nindent 8 }}
+        django-component: celery-worker
       annotations:
         helm/revision: "{{ $revision }}" # Hack to force restart on upgrade
     spec:
@@ -34,7 +44,8 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: {{ $worker.internalPort }}
-        command: {{ $worker.command }}
+        command:
+          {{ toYaml $worker.command | nindent 10 }}
         env:
         {{- if $gcloudCredentials.enabled }}
           - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -92,5 +103,6 @@ spec:
           secret:
             secretName: {{ $gcloudCredentials.kubernetesSecret }}
       {{- end }}
-{{ end }}
+---
+{{- end -}}
 {{- end -}}

@@ -1,11 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "fullname" . }}
+  name: {{ include "rehive-service.fullname" . }}
   labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    {{ include "rehive-service.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rehive-service.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -16,7 +20,8 @@ spec:
       annotations:
         helm/revision: "{{ .Release.Revision }}" # Hack to force restart on upgrade
       labels:
-        app: webapp
+        app.kubernetes.io/name: {{ include "rehive-service.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
       - name: webapp
@@ -68,7 +73,7 @@ spec:
         {{- if .Values.envFromSecret.enabled }}
         envFrom:
           - secretRef:
-              name: {{ .Values.envFromSecret.secretName | default (include "fullname" .) }}
+              name: {{ .Values.envFromSecret.secretName | default (include "rehive-service.fullname" .) }}
         {{- end }}
         {{- with .Values.service.livenessProbe }}
         livenessProbe:
