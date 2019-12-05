@@ -65,7 +65,7 @@ spec:
     envFrom:
       {{ toYaml .Values.envFrom | nindent 10 }}
     resources:
-      {{ toYaml .Values.deployment.management.resources | nindent 10 }}
+      {{ toYaml .Values.management.resources | nindent 10 }}
     volumeMounts:
       {{ toYaml .Values.volumeMounts | nindent 10 }}
   volumes:
