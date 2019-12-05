@@ -16,8 +16,8 @@ service:
   internalPort: 8000
   readinessProbe:
   livenessProbe:
-env: {}
-envFrom: {}
+env: []
+envFrom: []
 ingress:
   enabled: true
   hosts:
@@ -40,8 +40,8 @@ management:
     limits:
       memory: 1G
       cpu: 266m
-volumeMounts: {}
-volumes: {}
+volumeMounts: []
+volumes: []
 workers:
   enabled: false
   deployments:
@@ -50,5 +50,5 @@ workers:
     replicaCount: 1
     command: ['/bin/sh','-c', 'celery -A config.celery worker --loglevel=INFO --concurrency=1 -Q general-example']
     requests: {}
-    volumes: {}
-    volumeMounts: {}
+    volumes: []
+    volumeMounts: []
