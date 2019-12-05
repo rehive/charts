@@ -40,14 +40,15 @@ management:
     limits:
       memory: 1G
       cpu: 266m
-volumeMounts:
-volumes:
-workersEnabled: false
+volumeMounts: {}
+volumes: {}
 workers:
+  enabled: false
+  deployments:
   - name: worker-general
     internalPort: 8000
     replicaCount: 1
     command: ['/bin/sh','-c', 'celery -A config.celery worker --loglevel=INFO --concurrency=1 -Q general-example']
     requests: {}
-    volumes:
-    volumeMounts:
+    volumes: {}
+    volumeMounts: {}
