@@ -83,6 +83,7 @@ spec:
                   key: password-standby
             - name: PGROOT
               value: /home/postgres/pgdata
+
             {{ if .Values.walE.enabled }}
             - name: USE_WALE
               value: {{ .Values.walE.enabled | quote }}
@@ -118,6 +119,7 @@ spec:
               value: "/etc/credentials/{{ .Values.walE.gcloudCredentials }}"
             {{ end }}
             {{ end }}
+
             {{ if .Values.cloneWithWale.enabled }}
             - name: CLONE_WITH_WALE
               value: "true"
@@ -134,6 +136,66 @@ spec:
               value: "/etc/credentials/{{ .Values.cloneWithWale.gcloudCredentials }}"
             {{ end }}
             {{ end }}
+
+            {{ if .Values.walG.enabled }}
+            - name: USE_WALG
+              value: {{ .Values.walG.enabled | quote }}
+            - name: USE_WALG_BACKUP
+              value: {{ .Values.walG.enabled | quote }}
+            {{ if .Values.walG.envDir }}
+            - name: WALG_ENV_DIR
+              value: {{ .Values.walG.envDir | quote }}
+            {{ end }}
+            {{ if .Values.walG.scheduleCronJob }}
+            - name: BACKUP_SCHEDULE
+              value: {{ .Values.walG.scheduleCronJob | quote }}
+            {{ end }}
+            {{ if .Values.walG.retainBackups }}
+            - name: BACKUP_NUM_TO_RETAIN
+              value: {{ .Values.walG.retainBackups | quote }}
+            {{ end }}
+            {{ if .Values.walG.s3Bucket }}
+            - name: WAL_S3_BUCKET
+              value: {{ .Values.walG.s3Bucket | quote }}
+            {{ else if .Values.walG.gcsBucket }}
+            - name: WAL_GCS_BUCKET
+              value: {{ .Values.walG.gcsBucket | quote }}
+            {{ end }}
+            {{ if .Values.walG.backupThresholdMegabytes }}
+            - name: WALE_BACKUP_THRESHOLD_MEGABYTES
+              value: {{ .Values.walG.backupThresholdMegabytes | quote }}
+            {{ end }}
+            {{ if .Values.walG.backupThresholdPercentage }}
+            - name: WALE_BACKUP_THRESHOLD_PERCENTAGE
+              value: {{ .Values.walG.backupThresholdPercentage | quote }}
+            {{ end }}
+            {{ if .Values.gcloudCredentials.enabled }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/credentials/{{ .Values.walG.gcloudCredentials }}"
+            {{ end }}
+            {{ end }}
+
+            {{ if .Values.cloneWithWalG.enabled }}
+            - name: CLONE_USE_WALG
+              value: "true"
+            - name: USE_WALG_RESTORE
+              value: {{ .Values.cloneWithWalG.enabled | quote }}
+            - name: CLONE_WAL_GCS_BUCKET
+              value: {{ .Values.cloneWithWalG.cloneWalGcsBucket | quote }}
+            - name: CLONE_WAL_GS_BUCKET
+              value: {{ .Values.cloneWithWalG.cloneWalGcsBucket | quote }}
+            - name: CLONE_SCOPE
+              value: {{ .Values.cloneWithWalG.cloneScope | quote }}
+            - name: CLONE_METHOD
+              value: "CLONE_WITH_WALE"
+            - name: CLONE_TARGET_TIME
+              value: {{ .Values.cloneWithWalG.cloneTargetTime | quote }}
+            {{ if .Values.gcloudCredentials.enabled }}
+            - name: CLONE_GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/credentials/{{ .Values.cloneWithWalG.gcloudCredentials }}"
+            {{ end }}
+            {{ end }}
+
           ports:
             - containerPort: 8008
               name: patroni
