@@ -121,8 +121,6 @@ spec:
             {{ end }}
 
             {{ if .Values.cloneWithWale.enabled }}
-            - name: CLONE_WITH_WALE
-              value: "true"
             - name: CLONE_WAL_GCS_BUCKET
               value: {{ .Values.cloneWithWale.cloneWalGcsBucket | quote }}
             - name: CLONE_SCOPE
@@ -143,7 +141,7 @@ spec:
             - name: USE_WALG_BACKUP
               value: {{ .Values.walG.enabled | quote }}
             {{ if .Values.walG.envDir }}
-            - name: WALG_ENV_DIR
+            - name: WALE_ENV_DIR
               value: {{ .Values.walG.envDir | quote }}
             {{ end }}
             {{ if .Values.walG.scheduleCronJob }}
@@ -181,8 +179,6 @@ spec:
             - name: USE_WALG_RESTORE
               value: {{ .Values.cloneWithWalG.enabled | quote }}
             - name: CLONE_WAL_GCS_BUCKET
-              value: {{ .Values.cloneWithWalG.cloneWalGcsBucket | quote }}
-            - name: CLONE_WAL_GS_BUCKET
               value: {{ .Values.cloneWithWalG.cloneWalGcsBucket | quote }}
             - name: CLONE_SCOPE
               value: {{ .Values.cloneWithWalG.cloneScope | quote }}
