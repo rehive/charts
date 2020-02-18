@@ -83,6 +83,37 @@ gcloudCredentials:
   enabled: false
   secretName: "google-credentials-postgres"
 
+backup:
+  enabled: false
+  logDestination: stderr,csvlog
+  method: wal_g
+  scope:
+  gsBucket:
+  retainBackups: 2
+  wal_e:
+    backupThresholdMegabytes: 1024
+    backupThresholdPercentage: 30
+    gcloudCredentials:
+  wal_g:
+    downloadConcurrency: 2
+    gcloudCredentials:
+
+restore:
+  enabled: false
+  logDestination: stderr,csvlog
+  method: wal_g
+  scope:
+  gsBucket:
+  scheduleCronJob: 00 01 * * *
+  retainbackups: 2
+  wal_e:
+    backupThresholdMegabytes: 1024
+    backupThresholdPercentage: 30
+    gcloudCredentials:
+  wal_g:
+    downloadConcurrency: 2
+    gcloudCredentials:
+
 cloneWithWale:
   enabled: false
   cloneWalGcsBucket: ""
