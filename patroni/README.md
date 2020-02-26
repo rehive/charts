@@ -36,7 +36,7 @@ The following tables lists the configurable parameters of the patroni-k8s chart 
 | `debug` | toggle to print debug messages | `false` |
 | `nodeSelector` | nodeSelector map | `{}` |
 | `tolerations` | node taints to tolerate  | `[]` |
-| `podAntiAffinity` | Set the pod antiaffinity to either `(hard|soft)` | `soft` |
+| `podAntiAffinity` | Set the pod antiaffinity to either `[hard, soft]` | `soft` |
 | `resources` | CPU and Memory requests and limits for each pod | `[]` |
 | `useConfigMaps` | default patroni to create an endpoint for the postgres settings else an endpoint of the settings will be used | `false` |
 | `postgresParamaters` | Postgres parameters for Patroni https://github.com/zalando/patroni/blob/master/docs/SETTINGS.rst#postgresql | `{'bin_dir': '/usr/lib/postgresql/9.6/bin' }` |
@@ -45,8 +45,8 @@ The following tables lists the configurable parameters of the patroni-k8s chart 
 | `walE.envDir` | directory to store the wal-E environment variables | `/home/postgres/etc/wal-e.d/env` |
 | `walE.scheduleCronJob` | crontab schedule of wal-e backup | `00 01 * * *` |
 | `walE.retainBackups` | number of base backups to retain | `2` |
-| `walE.s3Bucket` | Amazon S3 bucket used for wal-e backups | `` |
-| `walE.gcsBucket` | Google Cloud Platform (GCP) Storage bucket  used for wal-e backups | `` |
+| `walE.s3Bucket` | Amazon S3 bucket used for wal-e backups | `""` |
+| `walE.gcsBucket` | Google Cloud Platform (GCP) Storage bucket  used for wal-e backups | `""` |
 | `walE.gcloudCredentials` | name of the Google Applications Credentials file for wal-E backup. This file name would be in the `gcloudCredentials.secretName` k8s secret | `gcloud-wale.json` |
 | `walE.backupThresholdMegabytes` | maximum size of the WAL segments accumulated after the base backup to consider WAL-E restore instead of pg_basebackup | `1024` |
 | `walE.backupThresholdPercentage` | maximum ratio (in percents) of the accumulated WAL files to the base backup to consider WAL-E restore instead of pg_basebackup | `30` |
