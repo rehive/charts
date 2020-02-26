@@ -18,7 +18,7 @@ To install the chart with the release name `my-release`:
 $ helm repo add rehive https://rehive.github.io/charts
 $ helm repo update
 $ helm dependency update
-$ helm install --name my-release incubator/patroni-k8s
+$ helm install --name my-release rehive/patroni --version 0.8.3
 ```
 
 ## Configuration
@@ -47,9 +47,14 @@ The following tables lists the configurable parameters of the patroni-k8s chart 
 | `walE.retainBackups` | number of base backups to retain | `2` |
 | `walE.s3Bucket` | Amazon S3 bucket used for wal-e backups | `""` |
 | `walE.gcsBucket` | Google Cloud Platform (GCP) Storage bucket  used for wal-e backups | `""` |
-| `walE.gcloudCredentials` | name of the Google Applications Credentials file for wal-E backup. This file name would be in the `gcloudCredentials.secretName` k8s secret | `gcloud-wale.json` |
+| `walE.gcloudCredentials` | name of the Google Applications Credentials file for wal-E backup. This file name would be in the `gcloudCredentials.secretName` k8s secret | `wale-credentials.json` |
 | `walE.backupThresholdMegabytes` | maximum size of the WAL segments accumulated after the base backup to consider WAL-E restore instead of pg_basebackup | `1024` |
 | `walE.backupThresholdPercentage` | maximum ratio (in percents) of the accumulated WAL files to the base backup to consider WAL-E restore instead of pg_basebackup | `30` |
+| `cloneWithWale.enabled` | enable wal-E restore | `false` |
+| `cloneWithWale.cloneWalGcsBucket` | Google Cloud Storage (GCS) Bucket name to restore from | `""` |
+| `cloneWithWale.cloneScope` | Name of the scope to clone from. Default spilo image checks the `gs://<gcs_bucket>//spilo/<clone_scope>/wal` directory for restore | `""` |
+| `cloneWithWale.cloneTargetTime` | Time to restore backup. Uses the format `"+%Y-%m-%u %H:%M:%S.%N+00:00"`. The last 00:00 can be altered to reflect the timezone where 00:00 is UTC. | `""` |
+| `cloneWithWale.gcloudCredentials` | name of the Google Applications Credentials file for wal-E restore. This file name would be in the `gcloudCredentials.secretName` k8s secret | `clone-wale-credentials.json` |
 | `persistentVolume.enabled` | specifies whether persistent volumes are used | `true` |
 | `persistentVolume.accessModes` | persistent volume access modes | `[ReadWriteOnce]` |
 | `persistentVolume.annotations` | annotations for persistent volume claim | `{}` |

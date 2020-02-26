@@ -64,20 +64,20 @@ walE:
   retainBackups: 2
   s3Bucket:
   gcsBucket: # the bucket name created with rdeploy create_bucket
-  gcloudCredentials: "gcloud-wale.json"
+  gcloudCredentials: "wale-credentials.json"
   backupThresholdMegabytes: 1024
   backupThresholdPercentage: 30
 
 gcloudCredentials:
   enabled: false
-  secretName: "gcloud-wale"
+  secretName: "google-credentials-postgres"
 
 cloneWithWale:
   enabled: false
   cloneWalGcsBucket: ""
   cloneScope: ""
   cloneTargetTime: ""
-  gcloudCredentials: "gcloud-wale.json"
+  gcloudCredentials: "clone-wale-credentials.json"
 
 persistentVolume:
   enabled: true
