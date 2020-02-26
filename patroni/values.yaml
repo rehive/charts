@@ -87,7 +87,7 @@ persistentVolume:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  # storageClass: "-"
+  storageClass: "patroni-standard"
   accessModes:
     - ReadWriteOnce
   size: 1Gi
@@ -105,4 +105,4 @@ rbac:
 # Create ServiceAccount for patroni
 serviceAccount:
   create: true
-  name:
+  name: ""
