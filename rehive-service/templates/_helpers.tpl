@@ -26,15 +26,12 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "rehive-service.labels" -}}
-app.kubernetes.io/name: {{ include "rehive-service.name" . }}
+app.kubernetes.io/part-of: {{ include "rehive-service.name" . }}
+app.kubernetes.io/instance: {{ include "rehive-service.fullname" . }}
+app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+app.kubernetes.io/version: {{ .Chart.Version | quote }}
 helm.sh/chart: {{ include "rehive-service.chart" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/component: server
-release: {{ .Release.Name }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
+helm.sh/release: {{ include "rehive-service.fullname" . }}
 {{- end -}}
 
 
@@ -60,13 +57,22 @@ Environment Variables
   value: {{ .Values.rabbitmq.host }}
 - name: RABBITMQ_PORT
   value: {{ .Values.rabbitmq.port | quote }}
-- name: RABBITMQ_USER
-  value: {{ .Values.rabbitmq.user }}
 - name: RABBITMQ_PASSWORD
   valueFrom:
     secretKeyRef:
       name: {{ .Values.rabbitmq.secret.name }}
       key: {{ .Values.rabbitmq.secret.key }}
+{{- end }}
+{{- if .Values.redis.enabled }}
+- name: REDIS_HOST
+  value: {{ .Values.redis.host }}
+- name: REDIS_PORT
+  value: {{ .Values.redis.port | quote }}
+- name: REDIS_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.redis.secret.name }}
+      key: {{ .Values.redis.secret.key }}
 {{- end }}
 {{- end -}}
 

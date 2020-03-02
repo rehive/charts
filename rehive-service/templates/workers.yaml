@@ -1,15 +1,13 @@
-{{- $chartName := include "rehive-service.name" . }}
-{{- $gcloudCredentials := .Values.gcloudCredentials -}}
-{{- $labels := include "rehive-service.labels" . }}
-{{- $postgres := .Values.postgres -}}
-{{- $rabbitmq := .Values.rabbitmq -}}
-{{- $redis := .Values.redis -}}
-{{- $releaseName := .Release.Name -}}
-{{- $replicaCount := .Values.deployment.replicaCount -}}
-{{- $repository := .Values.image.repository -}}
-{{- $revision := .Release.Revision -}}
-{{- $serviceName := include "rehive-service.fullname" . -}}
-{{- $tag := .Values.image.tag -}}
+{{ $chartName := include "rehive-service.name" . }}
+{{ $labels := include "rehive-service.labels" . }}
+{{ $plugins := include "rehive-service.plugins" . }}
+{{ $serviceName := include "rehive-service.fullname" . }}
+{{ $gcloudCredentials := .Values.gcloudCredentials }}
+{{ $releaseName := .Release.Name }}
+{{ $repository := .Values.image.repository }}
+{{ $revision := .Release.Revision }}
+{{ $tag := .Values.image.tag }}
+{{ $vendorName := .Values.vendor.name }}
 
 {{- if .Values.workers.enabled -}}
 {{- range $worker := .Values.workers.deployments -}}
@@ -17,13 +15,17 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ $worker.name }}
+  labels:
+    {{ $labels | nindent 4 }}
+    app.kubernetes.io/name: {{ $chartName }}
+    app.kubernetes.io/component: celery-worker
 spec:
+  replicas: {{ $worker.replicaCount }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ $chartName }}
-      app.kubernetes.io/instance: {{ $releaseName }}
-      django-component: celery-worker
-  replicas: {{ $worker.replicaCount }}
+      app.kubernetes.io/component: celery-worker
+      app: {{ $worker.name }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -33,8 +35,8 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: {{ $chartName }}
-        app.kubernetes.io/instance: {{ $releaseName }}
-        django-component: celery-worker
+        app.kubernetes.io/component: celery-worker
+        app: {{ $worker.name }}
       annotations:
         helm/revision: "{{ $revision }}" # Hack to force restart on upgrade
     spec:
@@ -45,47 +47,21 @@ spec:
         ports:
         - containerPort: {{ $worker.internalPort }}
         command:
-          {{ toYaml $worker.command | nindent 10 }}
+          {{- toYaml $worker.command | nindent 12 }}
+        args:
+          {{- range $key, $value := $worker.args }}
+          {{- if $value }}
+          - --{{ $key }}={{ $value }}
+          {{- else }}
+          - --{{ $key }}
+          {{- end }}
+          {{- end }}
         env:
         {{- if $gcloudCredentials.enabled }}
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: "/etc/credentials/{{ $gcloudCredentials.kubernetesSecret }}.json"
         {{- end }}
-        {{- if $postgres.enabled }}
-          - name: POSTGRES_HOST
-            value: "{{ $postgres.host}}"
-          - name: POSTGRES_PORT
-            value: "{{ $postgres.port}}"
-          - name: POSTGRES_USER
-            value: "{{ $postgres.user }}"
-          - name: POSTGRES_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: "{{ $postgres.secret.name}}"
-                key: "{{ $postgres.secret.key}}"
-        {{- end }}
-        {{- if $redis.enabled }}
-          - name: REDIS_HOST
-            value: "{{ $redis.host}}"
-          - name: REDIS_PORT
-            value: "{{ $redis.port}}"
-          - name: REDIS_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: "{{ $redis.secret.name}}"
-                key: "{{ $redis.secret.key}}"
-        {{- end }}
-        {{- if $rabbitmq.enabled }}
-          - name: RABBITMQ_HOST
-            value: "{{ $rabbitmq.host}}"
-          - name: RABBITMQ_PORT
-            value: "{{ $rabbitmq.port}}"
-          - name: RABBITMQ_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: "{{ $rabbitmq.secret.name}}"
-                key: "{{ $rabbitmq.secret.key}}"
-        {{- end }}
+          {{ $plugins | nindent 10 }}
         envFrom:
           - secretRef:
               name: {{ $serviceName }}
@@ -97,6 +73,11 @@ spec:
             mountPath: /etc/credentials
             readOnly: true
         {{- end }}
+      {{- if (eq "azure" $vendorName) }}
+      dnsConfig:
+        options:
+          - name: single-request-reopen
+      {{- end }}
       {{- if $gcloudCredentials.enabled }}
       volumes:
         - name: {{ $gcloudCredentials.kubernetesSecret }}

@@ -4,6 +4,8 @@ metadata:
   name: {{ include "rehive-service.fullname" . }}
   labels:
     {{ include "rehive-service.labels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ include "rehive-service.name" . }}
+    app.kubernetes.io/component: ingress-service
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -13,5 +15,4 @@ spec:
       name: {{ .Values.service.name }}
   selector:
     app.kubernetes.io/name: {{ include "rehive-service.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    django-component: webapp-server
+    app.kubernetes.io/component: webserver

@@ -2,9 +2,13 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 deployment:
+  command:
+    - gunicorn
+    - "config.wsgi:application"
+  args:
+    config: "file:config/gunicorn.py"
   replicaCount: 3
   resources: {}
-  command: []
 
 image:
   repository: rehive/example
@@ -16,15 +20,21 @@ service:
   type: ClusterIP
   externalPort: 80
   internalPort: 8000
-  readinessProbe:
-  livenessProbe:
+  readinessProbe: {}
+  livenessProbe: {}
 
 envFromSecret:
   enabled: true
+  name: ""
 
 management:
   enabled: true
   resources: {}
+
+vendor:
+  name: gcp
+  # for azure install use
+  # name: azure
 
 ingress:
   enabled: true
@@ -73,5 +83,12 @@ workers:
   - name: worker-receive
     internalPort: 8000
     replicaCount: 1
-    command: ['/bin/sh','-c', 'celery -A config.celery worker --loglevel=INFO --concurrency=1 -Q general-example']
+    command:
+      - celery
+      - worker
+    args:
+      app: config.celery worker
+      loglevel: INFO
+      concurrency: 1
+      queue: general
     resources: {}
