@@ -87,7 +87,7 @@ workers:
       - celery
       - worker
     args:
-      app: config.celery worker
+      app: config.celery
       loglevel: INFO
       concurrency: 1
       queue: general
