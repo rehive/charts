@@ -10,6 +10,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: {{ include "rehive-service.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
+      django-component: webapp-server
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -22,6 +23,7 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "rehive-service.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+        django-component: webapp-server
     spec:
       containers:
       - name: webapp

@@ -22,6 +22,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: {{ $chartName }}
       app.kubernetes.io/instance: {{ $releaseName }}
+      django-component: celery-worker
   replicas: {{ $worker.replicaCount }}
   strategy:
     type: RollingUpdate
@@ -33,7 +34,6 @@ spec:
       labels:
         app.kubernetes.io/name: {{ $chartName }}
         app.kubernetes.io/instance: {{ $releaseName }}
-        {{ $labels | nindent 8 }}
         django-component: celery-worker
       annotations:
         helm/revision: "{{ $revision }}" # Hack to force restart on upgrade

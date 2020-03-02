@@ -14,3 +14,4 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "rehive-service.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+    django-component: webapp-server
