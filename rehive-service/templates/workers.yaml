@@ -1,4 +1,3 @@
-{{ $chartName := include "rehive-service.name" . }}
 {{ $labels := include "rehive-service.labels" . }}
 {{ $plugins := include "rehive-service.plugins" . }}
 {{ $serviceName := include "rehive-service.fullname" . }}
@@ -17,15 +16,14 @@ metadata:
   name: {{ $worker.name }}
   labels:
     {{ $labels | nindent 4 }}
-    app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
+    app.kubernetes.io/name: {{ $serviceName }}
     app.kubernetes.io/component: worker
 spec:
   replicas: {{ $worker.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ $chartName }}
-      app.kubernetes.io/component: celery-worker
-      app: {{ $worker.name }}
+      app.kubernetes.io/name: {{ $serviceName }}
+      app.kubernetes.io/component: worker
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -34,9 +32,8 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ $chartName }}
-        app.kubernetes.io/component: celery-worker
-        app: {{ $worker.name }}
+        app.kubernetes.io/name: {{ $serviceName }}
+        app.kubernetes.io/component: worker
       annotations:
         helm/revision: "{{ $revision }}" # Hack to force restart on upgrade
     spec:
