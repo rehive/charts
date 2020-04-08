@@ -26,10 +26,7 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "rehive-service.labels" -}}
-app.kubernetes.io/part-of: {{ include "rehive-service.name" . }}
-app.kubernetes.io/instance: {{ include "rehive-service.fullname" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-app.kubernetes.io/version: {{ .Chart.Version | quote }}
 helm.sh/chart: {{ include "rehive-service.chart" . }}
 helm.sh/release: {{ include "rehive-service.fullname" . }}
 {{- end -}}
@@ -75,4 +72,3 @@ Environment Variables
       key: {{ .Values.redis.secret.key }}
 {{- end }}
 {{- end -}}
-

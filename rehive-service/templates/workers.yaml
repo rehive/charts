@@ -17,8 +17,8 @@ metadata:
   name: {{ $worker.name }}
   labels:
     {{ $labels | nindent 4 }}
-    app.kubernetes.io/name: {{ $chartName }}
-    app.kubernetes.io/component: celery-worker
+    app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
+    app.kubernetes.io/component: worker
 spec:
   replicas: {{ $worker.replicaCount }}
   selector:

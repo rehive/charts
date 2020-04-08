@@ -5,8 +5,8 @@ metadata:
   name: "{{ template "rehive-service.fullname" . }}-management"
   labels:
     {{ include "rehive-service.labels" . | nindent 4 }}
-    app.kubernetes.io/name: {{ include "rehive-service.name" . }}
-    app.kubernetes.io/component: webserver-manager
+    app.kubernetes.io/name: app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
+    app.kubernetes.io/component: server-manager
   annotations:
     helm/revision: "{{ .Release.Revision }}" # Hack to force restart on upgrade
 spec:

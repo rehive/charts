@@ -4,15 +4,14 @@ metadata:
   name: {{ include "rehive-service.fullname" . }}
   labels:
     {{ include "rehive-service.labels" . | nindent 4 }}
-    app.kubernetes.io/name: {{ include "rehive-service.name" . }}
-    app.kubernetes.io/component: webserver
+    app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
+    app.kubernetes.io/component: server
 spec:
   replicas: {{ .Values.deployment.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "rehive-service.name" . }}
-      app.kubernetes.io/component: webserver
-      app: webapp
+      app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
+      app.kubernetes.io/component: server
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -23,9 +22,8 @@ spec:
       annotations:
         helm/revision: "{{ .Release.Revision }}" # Hack to force restart on upgrade
       labels:
-        app.kubernetes.io/name: {{ include "rehive-service.name" . }}
-        app.kubernetes.io/component: webserver
-        app: webapp
+        app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
+        app.kubernetes.io/component: server
     spec:
       containers:
       - name: webapp
