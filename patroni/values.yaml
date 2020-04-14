@@ -57,28 +57,6 @@ bootstrapParameters:
     loop_wait: 10
     retry_timeout: 30
 
-walE:
-  enabled: false
-  envDir: /home/postgres/etc/wal-e.d/env
-  scheduleCronJob: 00 01 * * *
-  retainBackups: 2
-  s3Bucket:
-  gcsBucket: # the bucket name created with rdeploy create_bucket
-  gcloudCredentials: "wale-credentials.json"
-  backupThresholdMegabytes: 1024
-  backupThresholdPercentage: 30
-
-walG:
-  enabled: false
-  envDir: /home/postgres/etc/wal-g.d/env
-  scheduleCronJob: 00 01 * * *
-  retainBackups: 2
-  s3Bucket:
-  gcsBucket: # the bucket name created with rdeploy create_bucket
-  gcloudCredentials: "walg-credentials.json"
-  backupThresholdMegabytes: 1024
-  backupThresholdPercentage: 30
-
 gcloudCredentials:
   enabled: false
   secretName: "google-credentials-postgres"
@@ -86,47 +64,33 @@ gcloudCredentials:
 backup:
   enabled: false
   logDestination: stderr,csvlog
-  method: wal_g
-  scope:
-  gsBucket:
-  retainBackups: 2
-  wal_e:
-    backupThresholdMegabytes: 1024
-    backupThresholdPercentage: 30
-    gcloudCredentials:
-  wal_g:
-    downloadConcurrency: 2
-    gcloudCredentials:
-
-restore:
-  enabled: false
-  logDestination: stderr,csvlog
-  method: wal_g
   scope:
   gsBucket:
   scheduleCronJob: 00 01 * * *
   retainbackups: 2
-  wal_e:
-    backupThresholdMegabytes: 1024
-    backupThresholdPercentage: 30
-    gcloudCredentials:
-  wal_g:
-    downloadConcurrency: 2
-    gcloudCredentials:
+  targetTime:
+  envDir:
+  method:
+    name: wal-g
+    wal_e:
+      backupThresholdMegabytes: 1024
+      backupThresholdPercentage: 30
+      gcloudCredentials:
+    wal_g:
+      downloadConcurrency: 2
+      gcloudCredentials:
 
-cloneWithWale:
+restore:
   enabled: false
-  cloneWalGcsBucket: ""
-  cloneScope: ""
-  cloneTargetTime: ""
-  gcloudCredentials: "clone-wale-credentials.json"
-
-cloneWithWalG:
-  enabled: false
-  cloneWalGcsBucket: ""
-  cloneScope: ""
-  cloneTargetTime: ""
-  gcloudCredentials: "clone-walg-credentials.json"
+  scope:
+  gsBucket:
+  targetTime:
+  method:
+    name: wal-g
+    wal_e:
+      gcloudCredentials:
+    wal_g:
+      gcloudCredentials:
 
 persistentVolume:
   enabled: true
@@ -136,7 +100,7 @@ persistentVolume:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  # storageClass: "-"
+  storageClass: "patroni-standard"
   accessModes:
     - ReadWriteOnce
   size: 1Gi
@@ -154,4 +118,4 @@ rbac:
 # Create ServiceAccount for patroni
 serviceAccount:
   create: true
-  name:
+  name: ""

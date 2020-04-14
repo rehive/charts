@@ -84,114 +84,63 @@ spec:
             - name: PGROOT
               value: /home/postgres/pgdata
 
-            {{ if .Values.walE.enabled }}
+            {{ if .Values.backup.enabled }}
+            {{ if .Values.backup.scheduleCronJob }}
+            - name: BACKUP_SCHEDULE
+              value: {{ .Values.backup.scheduleCronJob | quote }}
+            {{ end }}
+            {{ if .Values.backup.retainBackups }}
+            - name: BACKUP_NUM_TO_RETAIN
+              value: {{ .Values.backup.retainBackups | quote }}
+            {{ end }}
+            {{ if .Values.backup.gsBucket }}
+            - name: WAL_GCS_BUCKET
+              value: {{ .Values.backup.gsBucket | quote }}
+            {{ end }}
+            {{ if eq .Values.backup.method.name "wal-e" }}
+            {{ with .Values.backup.method.wal_e }}
+              ### TODO add more wal-e settings for gs
             - name: USE_WALE
-              value: {{ .Values.walE.enabled | quote }}
-            {{ if .Values.walE.envDir }}
-            - name: WALE_ENV_DIR
-              value: {{ .Values.walE.envDir | quote }}
-            {{ end }}
-            {{ if .Values.walE.scheduleCronJob }}
-            - name: BACKUP_SCHEDULE
-              value: {{ .Values.walE.scheduleCronJob | quote }}
-            {{ end }}
-            {{ if .Values.walE.retainBackups }}
-            - name: BACKUP_NUM_TO_RETAIN
-              value: {{ .Values.walE.retainBackups | quote }}
-            {{ end }}
-            {{ if .Values.walE.s3Bucket }}
-            - name: WAL_S3_BUCKET
-              value: {{ .Values.walE.s3Bucket | quote }}
-            {{ else if .Values.walE.gcsBucket }}
-            - name: WAL_GCS_BUCKET
-              value: {{ .Values.walE.gcsBucket | quote }}
-            {{ end }}
-            {{ if .Values.walE.backupThresholdMegabytes }}
-            - name: WALE_BACKUP_THRESHOLD_MEGABYTES
-              value: {{ .Values.walE.backupThresholdMegabytes | quote }}
-            {{ end }}
-            {{ if .Values.walE.backupThresholdPercentage }}
-            - name: WALE_BACKUP_THRESHOLD_PERCENTAGE
-              value: {{ .Values.walE.backupThresholdPercentage | quote }}
-            {{ end }}
-            {{ if .Values.gcloudCredentials.enabled }}
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: "/etc/credentials/{{ .Values.walE.gcloudCredentials }}"
-            {{ end }}
-            {{ end }}
-
-            {{ if .Values.cloneWithWale.enabled }}
-            - name: CLONE_WAL_GCS_BUCKET
-              value: {{ .Values.cloneWithWale.cloneWalGcsBucket | quote }}
-            - name: CLONE_SCOPE
-              value: {{ .Values.cloneWithWale.cloneScope | quote }}
-            - name: CLONE_METHOD
-              value: "CLONE_WITH_WALE"
-            - name: CLONE_TARGET_TIME
-              value: {{ .Values.cloneWithWale.cloneTargetTime | quote }}
-            {{ if .Values.gcloudCredentials.enabled }}
-            - name: CLONE_GOOGLE_APPLICATION_CREDENTIALS
-              value: "/etc/credentials/{{ .Values.cloneWithWale.gcloudCredentials }}"
-            {{ end }}
-            {{ end }}
-
-            {{ if .Values.walG.enabled }}
-            - name: USE_WALG
-              value: {{ .Values.walG.enabled | quote }}
-            - name: USE_WALG_BACKUP
-              value: {{ .Values.walG.enabled | quote }}
-            {{ if .Values.walG.envDir }}
-            - name: WALE_ENV_DIR
-              value: {{ .Values.walG.envDir | quote }}
-            {{ end }}
-            {{ if .Values.walG.scheduleCronJob }}
-            - name: BACKUP_SCHEDULE
-              value: {{ .Values.walG.scheduleCronJob | quote }}
-            {{ end }}
-            {{ if .Values.walG.retainBackups }}
-            - name: BACKUP_NUM_TO_RETAIN
-              value: {{ .Values.walG.retainBackups | quote }}
-            {{ end }}
-            {{ if .Values.walG.s3Bucket }}
-            - name: WAL_S3_BUCKET
-              value: {{ .Values.walG.s3Bucket | quote }}
-            {{ else if .Values.walG.gcsBucket }}
-            - name: WAL_GCS_BUCKET
-              value: {{ .Values.walG.gcsBucket | quote }}
-            {{ end }}
-            {{ if .Values.walG.backupThresholdMegabytes }}
-            - name: WALE_BACKUP_THRESHOLD_MEGABYTES
-              value: {{ .Values.walG.backupThresholdMegabytes | quote }}
-            {{ end }}
-            {{ if .Values.walG.backupThresholdPercentage }}
-            - name: WALE_BACKUP_THRESHOLD_PERCENTAGE
-              value: {{ .Values.walG.backupThresholdPercentage | quote }}
-            {{ end }}
-            {{ if .Values.gcloudCredentials.enabled }}
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: "/etc/credentials/{{ .Values.walG.gcloudCredentials }}"
-            {{ end }}
-            {{ end }}
-
-            {{ if .Values.cloneWithWalG.enabled }}
-            - name: CLONE_USE_WALG
               value: "true"
-            - name: USE_WALG_RESTORE
-              value: {{ .Values.cloneWithWalG.enabled | quote }}
-            - name: CLONE_WAL_GCS_BUCKET
-              value: {{ .Values.cloneWithWalG.cloneWalGcsBucket | quote }}
-            - name: CLONE_SCOPE
-              value: {{ .Values.cloneWithWalG.cloneScope | quote }}
-            - name: CLONE_METHOD
-              value: "CLONE_WITH_WALE"
-            - name: CLONE_TARGET_TIME
-              value: {{ .Values.cloneWithWalG.cloneTargetTime | quote }}
-            {{ if .Values.gcloudCredentials.enabled }}
-            - name: CLONE_GOOGLE_APPLICATION_CREDENTIALS
-              value: "/etc/credentials/{{ .Values.cloneWithWalG.gcloudCredentials }}"
+            - name: WALE_BACKUP_THRESHOLD_MEGABYTES
+              value: {{ .backupThresholdMegabytes | quote }}
+            - name: WALE_BACKUP_THRESHOLD_PERCENTAGE
+              value: {{ .backupThresholdPercentage | quote }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/credentials/{{ .gcloudCredentials }}"
+            {{ end }}
+            {{ else if eq .Values.backup.method.name "wal-g" }}
+            {{ with .Values.backup.method.wal_g }}
+              ### TODO add more wal-g settings for gs
+            - name: USE_WALG
+              value: "true"
+            - name: WALG_DOWNLOAD_CONCURRENCY
+              value: {{ .downloadConcurrency | quote }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/credentials/{{ .gcloudCredentials }}"
+            {{ end }}
             {{ end }}
             {{ end }}
 
+            {{ if .Values.restore.enabled }}
+            - name: CLONE_WAL_GCS_BUCKET
+              value: {{ .Values.restore.gsBucket | quote }}
+            - name: CLONE_SCOPE
+              value: {{ .Values.restore.scope | quote }}
+            - name: CLONE_METHOD
+              value: "CLONE_WITH_WALE"
+            - name: CLONE_TARGET_TIME
+              value: {{ .Values.restore.targetTime | quote }}
+            {{ if eq .Values.restore.method.name "wal-g" }}
+            - name: CLONE_GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/credentials/{{ .Values.restore.method.wal_g.gcloudCredentials }}"
+            - name: USE_WALG_RESTORE
+              value: "true"
+            {{ else if eq .Values.restore.method.name "wal-e" }}
+            - name: CLONE_GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/credentials/{{ .Values.restore.method.wal_e.gcloudCredentials }}"
+            {{ end }}
+            {{ end }}
           ports:
             - containerPort: 8008
               name: patroni
