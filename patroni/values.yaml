@@ -69,7 +69,6 @@ backup:
   scheduleCronJob: 00 01 * * *
   retainbackups: 2
   targetTime:
-  envDir:
   method:
     name: wal-g
     wal_e:
@@ -78,6 +77,7 @@ backup:
       gcloudCredentials:
     wal_g:
       downloadConcurrency: 2
+      uploadConcurrency: 2
       gcloudCredentials:
 
 restore:

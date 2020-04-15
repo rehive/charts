@@ -56,8 +56,6 @@ spec:
               value: "true"
             - name: USE_KUBERNETES
               value: "true"
-            - name: WAL_BUCKET_SCOPE_PREFIX
-              value: ""
             {{- if .Values.useConfigMaps }}
             - name: KUBERNETES_USE_CONFIGMAPS
               value: "true"
@@ -94,14 +92,12 @@ spec:
               value: {{ .Values.backup.retainBackups | quote }}
             {{ end }}
             {{ if .Values.backup.gsBucket }}
-            - name: WAL_GCS_BUCKET
+            - name: WAL_GS_BUCKET
               value: {{ .Values.backup.gsBucket | quote }}
             {{ end }}
             {{ if eq .Values.backup.method.name "wal-e" }}
             {{ with .Values.backup.method.wal_e }}
               ### TODO add more wal-e settings for gs
-            - name: USE_WALE
-              value: "true"
             - name: WALE_BACKUP_THRESHOLD_MEGABYTES
               value: {{ .backupThresholdMegabytes | quote }}
             - name: WALE_BACKUP_THRESHOLD_PERCENTAGE
@@ -114,8 +110,12 @@ spec:
               ### TODO add more wal-g settings for gs
             - name: USE_WALG
               value: "true"
+            - name: USE_WALG_BACKUP
+              value: "true"
             - name: WALG_DOWNLOAD_CONCURRENCY
               value: {{ .downloadConcurrency | quote }}
+            - name: WALG_UPLOAD_CONCURRENCY
+              value: {{ .uploadConcurrency | quote }}
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/etc/credentials/{{ .gcloudCredentials }}"
             {{ end }}
@@ -123,7 +123,7 @@ spec:
             {{ end }}
 
             {{ if .Values.restore.enabled }}
-            - name: CLONE_WAL_GCS_BUCKET
+            - name: CLONE_WAL_GS_BUCKET
               value: {{ .Values.restore.gsBucket | quote }}
             - name: CLONE_SCOPE
               value: {{ .Values.restore.scope | quote }}
@@ -135,6 +135,8 @@ spec:
             - name: CLONE_GOOGLE_APPLICATION_CREDENTIALS
               value: "/etc/credentials/{{ .Values.restore.method.wal_g.gcloudCredentials }}"
             - name: USE_WALG_RESTORE
+              value: "true"
+            - name: CLONE_USE_WALG
               value: "true"
             {{ else if eq .Values.restore.method.name "wal-e" }}
             - name: CLONE_GOOGLE_APPLICATION_CREDENTIALS
