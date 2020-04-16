@@ -57,27 +57,48 @@ bootstrapParameters:
     loop_wait: 10
     retry_timeout: 30
 
-walE:
-  enabled: false
-  envDir: /home/postgres/etc/wal-e.d/env
-  scheduleCronJob: 00 01 * * *
-  retainBackups: 2
-  s3Bucket:
-  gcsBucket: # the bucket name created with rdeploy create_bucket
-  gcloudCredentials: "wale-credentials.json"
-  backupThresholdMegabytes: 1024
-  backupThresholdPercentage: 30
-
 gcloudCredentials:
   enabled: false
   secretName: "google-credentials-postgres"
 
-cloneWithWale:
+backup:
   enabled: false
-  cloneWalGcsBucket: ""
-  cloneScope: ""
-  cloneTargetTime: ""
-  gcloudCredentials: "clone-wale-credentials.json"
+  logDestination: stderr,csvlog
+  scope:
+  gsBucket:
+  scheduleCronJob: 00 01 * * *
+  retainbackups: 2
+  targetTime:
+  method:
+    name: wal-g
+    wal_e:
+      backupThresholdMegabytes: 1024
+      backupThresholdPercentage: 30
+      gcloudCredentials:
+    wal_g:
+      backupCompressionMethod: lz4
+      compressionMethod: lz4
+      deltaMaxSteps: 0
+      deltaOrigin: LATEST
+      diskRateLimit: 41943040
+      downloadConcurrency: 2
+      networkRateLimit: 10485760
+      preventWalOverwrite: 'true'
+      gcloudCredentials:
+      uploadConcurrency: 2
+      uploadDiskConcurrency: 1
+
+restore:
+  enabled: false
+  scope:
+  gsBucket:
+  targetTime:
+  method:
+    name: wal-g
+    wal_e:
+      gcloudCredentials:
+    wal_g:
+      gcloudCredentials:
 
 persistentVolume:
   enabled: true
