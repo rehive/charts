@@ -112,10 +112,26 @@ spec:
               value: "true"
             - name: USE_WALG_BACKUP
               value: "true"
+            - name: WALG_BACKUP_COMPRESSION_METHOD
+              value: {{ .backupCompressionMethod | quote }}
+            - name: WALG_COMPRESSION_METHOD
+              value: {{ .compressionMethod | quote }}
+            - name: WALG_DELTA_MAX_STEPS
+              value: {{ .deltaMaxSteps | quote }}
+            - name: WALG_DELTA_ORIGIN
+              value: {{ .deltaOrigin | quote }}
+            - name: WALG_DISK_RATE_LIMIT
+              value: {{ .diskRateLimit | quote }}
             - name: WALG_DOWNLOAD_CONCURRENCY
               value: {{ .downloadConcurrency | quote }}
+            - name: WALG_NETWORK_RATE_LIMIT
+              value: {{ .networkRateLimit | quote }}
+            - name: WALG_PREVENT_WAL_OVERWRITE
+              value: {{ .preventWalOverwrite | quote }}
             - name: WALG_UPLOAD_CONCURRENCY
               value: {{ .uploadConcurrency | quote }}
+            - name: WALG_UPLOAD_DISK_CONCURRENCY
+              value: {{ .uploadDiskConcurrency | quote }}
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/etc/credentials/{{ .gcloudCredentials }}"
             {{ end }}

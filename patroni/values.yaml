@@ -76,9 +76,17 @@ backup:
       backupThresholdPercentage: 30
       gcloudCredentials:
     wal_g:
+      backupCompressionMethod: lz4
+      compressionMethod: lz4
+      deltaMaxSteps: 0
+      deltaOrigin: LATEST
+      diskRateLimit: 41943040
       downloadConcurrency: 2
-      uploadConcurrency: 2
+      networkRateLimit: 10485760
+      preventWalOverwrite: 'true'
       gcloudCredentials:
+      uploadConcurrency: 2
+      uploadDiskConcurrency: 1
 
 restore:
   enabled: false
