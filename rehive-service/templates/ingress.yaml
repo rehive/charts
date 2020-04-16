@@ -7,6 +7,8 @@ metadata:
   name: {{ template "rehive-service.fullname" . }}
   labels:
     {{ include "rehive-service.labels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ include "rehive-service.name" . }}
+    app.kubernetes.io/component: ingress-service
   {{- with .Values.ingress.annotations }}
   annotations:
     {{ toYaml . | nindent 4 }}

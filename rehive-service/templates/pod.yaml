@@ -4,8 +4,9 @@ kind: Pod
 metadata:
   name: "{{ template "rehive-service.fullname" . }}-management"
   labels:
-    django-component: "management"
     {{ include "rehive-service.labels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ include "rehive-service.name" . }}
+    app.kubernetes.io/component: webserver-manager
   annotations:
     helm/revision: "{{ .Release.Revision }}" # Hack to force restart on upgrade
 spec:
