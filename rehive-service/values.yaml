@@ -2,12 +2,19 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 deployment:
-  command:
-    - gunicorn
-    - "config.wsgi:application"
-  args:
-    config: "file:config/gunicorn.py"
+  # List of commands to run the image and the mandatory arguments
+  command: null
+  # - gunicorn
+  # - "config.wsgi:application"
+
+  # # Keyword arguments and arguments for running the image
+  # # keyword arguments will be converted to the form --key=value
+  # # optional arguments will be key-value pairs with their values set to null
+  # # they will be converted to --arg
+  args: null
+  # config: "file:config/gunicorn.py"
   replicaCount: 3
+  # Memory and CPU limits and requests
   resources: {}
 
 image:
@@ -26,10 +33,6 @@ service:
 envFromSecret:
   enabled: true
   name: ""
-
-management:
-  enabled: true
-  resources: {}
 
 vendor:
   name: gcp
@@ -75,7 +78,7 @@ rabbitmq:
 
 gcloudCredentials:
   enabled: false
-  kubernetesSecret: gcloud_credentials
+  kubernetesSecret: google-credentials
 
 workers:
   enabled: false
