@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "bitcoin-core.fullname" . }}
@@ -12,6 +12,11 @@ metadata:
 spec:
   serviceName: {{ template "bitcoin-core.fullname" . }}
   replicas: {{ .Values.replicas }}  
+  updateStrategy:
+    type: OnDelete
+  selector:
+    matchLabels:
+      app: {{ template "bitcoin-core.name" . }}
   template:
     metadata:
       labels:
