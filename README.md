@@ -7,7 +7,7 @@ Rehive's Kubernetes Helm charts repository.
 GitHub pages is set up to point to the `docs` folder. Publishing charts:
 
 ```console
-$ helm create mychart
+$ helm create mychart # Only run this when creating a new helm chart
 $ helm package mychart
 $ mv mychart-0.1.0.tgz docs
 $ helm repo index docs --url https://rehive.github.io/charts

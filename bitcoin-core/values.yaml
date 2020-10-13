@@ -22,16 +22,6 @@ debug: false
 
 podAntiAffinity: soft
 
-nodeSelector:
-  cloud.google.com/gke-nodepool: bitcoin-core-pool
-
-tolerations:
-  - key: "dedicated"
-    operator: "Equal"
-    value: "bitcoin-core"
-    effect: "NoSchedule"
-
-
 # Resource requests and limits per pod
 resources: {}
 #  limits:
