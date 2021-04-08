@@ -4,7 +4,6 @@
 {{ $gcloudCredentials := .Values.gcloudCredentials }}
 {{ $releaseName := .Release.Name }}
 {{ $repository := .Values.image.repository }}
-{{ $pullSecrets := .Values.imagePullSecrets }}
 {{ $revision := .Release.Revision }}
 {{ $tag := .Values.image.tag }}
 {{ $vendorName := .Values.vendor.name }}
@@ -82,9 +81,9 @@ spec:
           secret:
             secretName: {{ $gcloudCredentials.kubernetesSecret }}
       {{- end }}
-      {{- if $pullSecrets.name }}
+      {{- if .Values.imagePullSecret }}
       imagePullSecrets:
-      - name: {{ $pullSecrets.name }}
+      - name: {{ .Values.imagePullSecret }}
       {{- end }}
 ---
 {{- end -}}
