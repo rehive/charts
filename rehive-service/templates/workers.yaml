@@ -7,6 +7,7 @@
 {{ $revision := .Release.Revision }}
 {{ $tag := .Values.image.tag }}
 {{ $vendorName := .Values.vendor.name }}
+{{ $imagePullSecret := .Values.imagePullSecrets | default dict }}
 
 {{- if .Values.workers.enabled -}}
 {{- range $worker := .Values.workers.deployments -}}
@@ -81,9 +82,9 @@ spec:
           secret:
             secretName: {{ $gcloudCredentials.kubernetesSecret }}
       {{- end }}
-      {{- if .Values.imagePullSecret }}
+      {{- if $imagePullSecret.name}}
       imagePullSecrets:
-      - name: {{ .Values.imagePullSecret }}
+      - name: {{ $imagePullSecret.name}}
       {{- end }}
 ---
 {{- end -}}

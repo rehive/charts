@@ -79,7 +79,8 @@ spec:
           secret:
             secretName: {{ .Values.gcloudCredentials.kubernetesSecret }}
       {{- end }}
-      {{- if .Values.imagePullSecret }}
+      {{- $imagePullSecret := .Values.imagePullSecrets | default dict }}
+      {{- if $imagePullSecret.name}}
       imagePullSecrets:
-      - name: {{ .Values.imagePullSecret }}
+      - name: {{ $imagePullSecret.name}}
       {{- end }}
