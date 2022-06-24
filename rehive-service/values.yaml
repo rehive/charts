@@ -27,10 +27,6 @@ envFromSecret:
   enabled: true
   name: ""
 
-management:
-  enabled: true
-  resources: {}
-
 vendor:
   name: gcp
   # for azure install use
@@ -51,7 +47,8 @@ ingress:
 postgres:
   enabled: false
   host: patroni-example-patroni.example-namespace.svc.cluster.local
-  user: admin
+  user: webapp
+  db: postgres
   port: 5432
   secret:
     name: patroni-example-patroni
@@ -60,6 +57,8 @@ postgres:
 redis:
   enabled: false
   host: redis-example-redis.example-namespace.svc.cluster.local
+  vhost: / 
+  user: guest
   port: 6379
   secret:
     name: redis-example-redis
@@ -92,3 +91,17 @@ workers:
       concurrency: 1
       queue: general
     resources: {}
+
+rbac:
+  create: false
+  rules:
+  - apiGroups:
+    - ""
+    resources:
+    - pods
+    verbs:
+    - get
+
+serviceAccount:
+  create: true
+  annotations: {}

@@ -43,6 +43,8 @@ Environment Variables
   value: {{ .Values.postgres.port | quote }}
 - name: POSTGRES_USER
   value: {{ .Values.postgres.user }}
+- name: POSTGRES_DB
+  value: {{ .Values.postgres.db }}
 - name: POSTGRES_PASSWORD
   valueFrom:
     secretKeyRef:
@@ -52,8 +54,12 @@ Environment Variables
 {{- if .Values.rabbitmq.enabled }}
 - name: RABBITMQ_HOST
   value: {{ .Values.rabbitmq.host }}
+- name: RABBITMQ_VHOST
+  value: {{ .Values.rabbitmq.vhost }}
 - name: RABBITMQ_PORT
   value: {{ .Values.rabbitmq.port | quote }}
+- name: RABBITMQ_USER
+  value: {{ .Values.rabbitmq.user }}
 - name: RABBITMQ_PASSWORD
   valueFrom:
     secretKeyRef:
