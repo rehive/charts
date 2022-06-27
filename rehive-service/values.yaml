@@ -9,6 +9,11 @@ deployment:
     config: "file:config/gunicorn.py"
   replicaCount: 3
   resources: {}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
 
 image:
   repository: rehive/example
