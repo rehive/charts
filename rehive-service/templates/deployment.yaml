@@ -44,6 +44,8 @@ spec:
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: "/etc/credentials/{{ .Values.gcloudCredentials.kubernetesSecret }}.json"
         {{- end }}
+          - name: VERSION
+            value: "{{ .Values.image.tag }}"
           {{ include "rehive-service.plugins" . | nindent 10 }}
         {{- if .Values.envFromSecret.enabled }}
         envFrom:

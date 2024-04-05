@@ -3,6 +3,12 @@
 This file documents all notable changes to Rehive Service Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## v1.1.0 - 2023-10-02
+
+### Major Changes
+
+* Added `VERSION` environment variable to the pod to specify the current version of the application.
+
 ## v0.1.40
 
 ### Major Changes

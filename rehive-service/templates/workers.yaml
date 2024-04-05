@@ -59,6 +59,8 @@ spec:
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: "/etc/credentials/{{ $gcloudCredentials.kubernetesSecret }}.json"
         {{- end }}
+          - name: VERSION
+            value: "{{ $tag }}"
           {{ $plugins | nindent 10 }}
         envFrom:
           - secretRef:
