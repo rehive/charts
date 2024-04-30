@@ -3,6 +3,12 @@
 This file documents all notable changes to Rehive Service Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## v1.1.1 - 2023-10-05
+
+### Added
+- Introduced lifecycle configuration in the Helm chart to manage container states more effectively.
+- Added a default pre-stop hook to the deployment configuration to help prevent downtime during deployments. This pre-stop hook includes a default `sleep 10` command to delay the termination.
+
 ## v1.1.0 - 2023-10-02
 
 ### Major Changes

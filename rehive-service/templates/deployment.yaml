@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/component: server
 spec:
   replicas: {{ .Values.deployment.replicaCount }}
+  terminationGracePeriodSeconds: {{ .Values.deployment.terminationGracePeriodSeconds }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
@@ -39,6 +40,8 @@ spec:
           - --{{ $key }}
           {{- end }}
           {{- end }}
+        lifecycle:
+          {{- toYaml .Values.deployment.lifecycle | nindent 12 }}
         env:
         {{- if .Values.gcloudCredentials.enabled }}
           - name: GOOGLE_APPLICATION_CREDENTIALS
