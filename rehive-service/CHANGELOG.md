@@ -3,6 +3,11 @@
 This file documents all notable changes to Rehive Service Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## v1.1.2 - 2023-05-03
+
+### Removed
+- Removed the default lifecycle configuration from the Helm chart.
+
 ## v1.1.1 - 2023-10-05
 
 ### Added

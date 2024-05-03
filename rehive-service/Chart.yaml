@@ -1,7 +1,7 @@
 apiVersion: v1
 description: A Helm chart for Kubernetes for Rehive Services
 name: rehive-service
-version: 1.1.1
+version: 1.1.2
 maintainers:
 - name: Rehive
   email: info@rehive.com

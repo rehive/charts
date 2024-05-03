@@ -5,6 +5,15 @@ Rehive's Kubernetes Helm charts repository.
 
 ### Publishing
 
+#### Using makefile
+The command below publishes to Github pages and Google Artifact registry  
+
+```
+make publish CHART_NAME=rehive-service
+```
+
+#### Manually
+
 GitHub pages is set up to point to the `docs` folder. Publishing charts:
 
 ```console
