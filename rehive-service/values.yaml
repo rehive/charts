@@ -8,13 +8,18 @@ deployment:
   args:
     config: "file:config/gunicorn.py"
   replicaCount: 3
-  terminationGracePeriodSeconds: 60
   resources: {}
+  terminationGracePeriodSeconds: 60
+  # Pre-stop hook to help prevent downtime when loadbalancer takes time to update to new pods.
+  lifecycle:
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo 'Pre-stop sleep initiated' > /proc/1/fd/1 && sleep 10"]
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 0
-      maxSurge: 1
+      maxUnavailable: 25%
+      maxSurge: 25%
 
 image:
   repository: rehive/example

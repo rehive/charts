@@ -3,12 +3,17 @@
 This file documents all notable changes to Rehive Service Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
-## v1.1.2 - 2023-05-03
+## v1.1.3 - 2024-05-10
+### Added
+- Added default lifecycle hook to the Helm chart to prevent 503 during deployment.
+- Updated default rolling update values to speed up deployments.
+
+## v1.1.2 - 2024-05-03
 
 ### Removed
 - Removed the default lifecycle configuration from the Helm chart.
 
-## v1.1.1 - 2023-10-05
+## v1.1.1 - 2024-10-05
 
 ### Added
 - Introduced lifecycle configuration in the Helm chart to manage container states more effectively.

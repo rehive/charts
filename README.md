@@ -8,6 +8,9 @@ Rehive's Kubernetes Helm charts repository.
 #### Using makefile
 The command below publishes to Github pages and Google Artifact registry  
 
+1. Update the version in the Chart.yaml file
+2. Update the changelog
+3. Run the publish command
 ```
 make publish CHART_NAME=rehive-service
 ```
