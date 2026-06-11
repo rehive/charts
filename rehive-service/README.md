@@ -43,6 +43,10 @@ The following table lists the configurable parameters of the rehive-service char
 | `deployment.resources` | CPU/Memory limits of the deployment pods | `{}` |
 | `deployment.command` | Command array to run after the deployment pods are ready | `['gunicorn', 'config.wsgi:application']` |
 | `deployment.args` | Args for the command to run. These are key-value pairs for kwargs and null keys for args. | `{'config': 'file:config/gunicorn.py'}` |
+| `deployment.nodeSelector` | Node labels for scheduling the deployment pods (e.g. pin to a node pool) | `{}` |
+| `deployment.tolerations` | Tolerations for the deployment pods (e.g. tolerate a dedicated node pool taint) | `[]` |
+| `workers.deployments[].nodeSelector` | Optional per-worker node labels for scheduling | `{}` |
+| `workers.deployments[].tolerations` | Optional per-worker tolerations | `[]` |
 | `image.repository` | Docker image containing the service's source | `rehive/example` |
 | `image.tag` | Docker image tag to use for the deployment. This is usually set to a version. | `latest` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
