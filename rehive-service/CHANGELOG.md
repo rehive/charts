@@ -3,6 +3,11 @@
 This file documents all notable changes to Rehive Service Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## v1.1.4 - 2026-06-11
+### Added
+- Added optional `deployment.nodeSelector` and `deployment.tolerations` values to the main deployment.
+- Added optional per-worker `nodeSelector` and `tolerations` values to worker deployments.
+
 ## v1.1.3 - 2024-05-10
 ### Added
 - Added default lifecycle hook to the Helm chart to prevent 503 during deployment.

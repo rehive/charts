@@ -38,6 +38,14 @@ spec:
       annotations:
         helm/revision: "{{ $revision }}" # Hack to force restart on upgrade
     spec:
+      {{- with $worker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $worker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: {{ $worker.name }}
         image: {{ $repository }}:{{ $tag }}
