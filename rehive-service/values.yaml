@@ -20,6 +20,13 @@ deployment:
     rollingUpdate:
       maxUnavailable: 25%
       maxSurge: 25%
+  podDisruptionBudget:
+    enabled: true
+    maxUnavailable: 1
+  # Soft, non-blocking spread across nodes (whenUnsatisfiable: ScheduleAnyway) is applied
+  # by the template when this is empty. Set your own constraints here to override.
+  topologySpreadConstraints: []
+  affinity: {}
 
 image:
   repository: rehive/example
@@ -33,6 +40,7 @@ service:
   internalPort: 8000
   readinessProbe: {}
   livenessProbe: {}
+  startupProbe: {}
 
 envFromSecret:
   enabled: true

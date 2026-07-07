@@ -32,6 +32,23 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.deployment.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.deployment.topologySpreadConstraints | nindent 8 }}
+      {{- else }}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
+              app.kubernetes.io/component: server
+      {{- end }}
+      {{- with .Values.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: webapp
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -62,6 +79,10 @@ spec:
         envFrom:
           - secretRef:
               name: {{ .Values.envFromSecret.name | default (include "rehive-service.fullname" .) }}
+        {{- end }}
+        {{- with .Values.service.startupProbe }}
+        startupProbe:
+          {{- toYaml . | nindent 10 }}
         {{- end }}
         {{- with .Values.service.livenessProbe }}
         livenessProbe:

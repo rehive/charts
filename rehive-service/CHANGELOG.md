@@ -3,6 +3,17 @@
 This file documents all notable changes to Rehive Service Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## v1.2.0 - 2026-07-07
+
+### Added
+- PodDisruptionBudget for the web deployment (`deployment.podDisruptionBudget`, enabled by default, `maxUnavailable: 1`) so node drains can't evict all replicas at once. Safe for single-replica deployments.
+- Default soft `topologySpreadConstraints` (whenUnsatisfiable: ScheduleAnyway) on the web deployment so replicas spread across nodes; overridable via `deployment.topologySpreadConstraints`. Optional `deployment.affinity` passthrough.
+- `service.startupProbe` passthrough so slow-booting pods get a startup grace window (empty by default; configure per service).
+- Worker deployments: optional per-worker `lifecycle` (preStop) and `terminationGracePeriodSeconds` (default 60).
+
+### Changed
+- Worker `imagePullPolicy` now follows `image.pullPolicy` (was hardcoded `IfNotPresent`).
+
 ## v1.1.4 - 2026-06-11
 ### Added
 - Added optional `deployment.nodeSelector` and `deployment.tolerations` values to the main deployment.
