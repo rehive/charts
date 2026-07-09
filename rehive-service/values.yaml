@@ -21,6 +21,17 @@ deployment:
       maxUnavailable: 25%
       maxSurge: 25%
 
+# Web-only, opt-in CPU HorizontalPodAutoscaler for the main (web) deployment.
+# When enabled, the HPA manages the replica count and takes over from
+# deployment.replicaCount (the deployment stops rendering a fixed replicas field).
+# Disabled by default; bounds below are placeholders meant to be overridden per service.
+# Worker/celery autoscaling is deliberately out of scope.
+autoscaling:
+  enabled: false
+  minReplicas: 3
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
 image:
   repository: rehive/example
   tag: latest
