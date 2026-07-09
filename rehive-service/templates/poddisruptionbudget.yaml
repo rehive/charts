@@ -1,0 +1,16 @@
+{{- if .Values.deployment.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "rehive-service.fullname" . }}
+  labels:
+    {{- include "rehive-service.labels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
+    app.kubernetes.io/component: server
+spec:
+  maxUnavailable: {{ .Values.deployment.podDisruptionBudget.maxUnavailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
+      app.kubernetes.io/component: server
+{{- end }}

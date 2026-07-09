@@ -46,10 +46,15 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      terminationGracePeriodSeconds: {{ $worker.terminationGracePeriodSeconds | default 60 }}
+      {{- with $worker.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: {{ $worker.name }}
         image: {{ $repository }}:{{ $tag }}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ $.Values.image.pullPolicy }}
         ports:
         - containerPort: {{ $worker.internalPort }}
         command:
@@ -62,6 +67,10 @@ spec:
           - --{{ $key }}
           {{- end }}
           {{- end }}
+        {{- with $worker.lifecycle }}
+        lifecycle:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         env:
         {{- if $gcloudCredentials.enabled }}
           - name: GOOGLE_APPLICATION_CREDENTIALS
