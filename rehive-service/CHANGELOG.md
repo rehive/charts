@@ -3,6 +3,12 @@
 This file documents all notable changes to Rehive Service Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## v1.3.0 - 2026-07-09
+### Added
+- Added an opt-in, web-only CPU `HorizontalPodAutoscaler` (`autoscaling/v2`) for the main deployment, gated on `autoscaling.enabled` (default `false`).
+- New `autoscaling` values block: `enabled`, `minReplicas`, `maxReplicas`, `targetCPUUtilizationPercentage`.
+- When `autoscaling.enabled` is true the web deployment no longer renders a fixed `replicas` field, so the HPA owns the replica count. Worker/celery autoscaling is out of scope.
+
 ## v1.1.4 - 2026-06-11
 ### Added
 - Added optional `deployment.nodeSelector` and `deployment.tolerations` values to the main deployment.

@@ -7,7 +7,9 @@ metadata:
     app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
     app.kubernetes.io/component: server
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.deployment.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
