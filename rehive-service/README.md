@@ -66,7 +66,18 @@ The following table lists the configurable parameters of the rehive-service char
 | `serviceAccount.create` | Create a ServiceAccount for the pods | `true` |
 | `serviceAccount.name` | ServiceAccount name. Defaults to the release name when empty; with `create: false` and no name, pods use the namespace `default` account | `""` |
 | `vendor.name` | Name of the vendor to install the manifest. `(aws|gcp|azure)` | `gcp` |
-| `ingress.enabled` | Create ingress resource | `true` |
+| `httpRoute.enabled` | Create a Gateway API HTTPRoute attached to a shared Gateway (the standard routing path for new services; e.g. GKE Gateway with a Google Application Load Balancer) | `false` |
+| `httpRoute.gateway.name` | Name of the shared Gateway to attach to | `external-http` |
+| `httpRoute.gateway.namespace` | Namespace of the shared Gateway | `gateway` |
+| `httpRoute.hostnames` | Hostnames routed to the service | `[example.services.rehive.com]` |
+| `httpRoute.rules` | Custom routing rules; when empty a single rule routes `/` to the service on `service.externalPort` | `[]` |
+| `httpRoute.labels` | Extra labels for the HTTPRoute, e.g. `{gateway: external-http}` | `{}` |
+| `httpRoute.healthCheckPolicy` | GKE HealthCheckPolicy `spec.default` passthrough targeting the Service (e.g. `{config: {type: HTTP, httpHealthCheck: {requestPath: /readiness}}}`); empty disables it | `{}` |
+| `httpRoute.backendPolicy` | GKE GCPBackendPolicy `spec.default` passthrough targeting the Service (e.g. Cloud Armor `securityPolicy`, `timeoutSec`, `logging`); empty disables it | `{}` |
+| `httpRoute.nameOverride` | HTTPRoute name, mainly for adopting pre-existing resources | `<release>-external` |
+| `httpRoute.healthCheckPolicyName` | HealthCheckPolicy name override | `<release>-health` |
+| `httpRoute.backendPolicyName` | GCPBackendPolicy name override | `<release>-backend` |
+| `ingress.enabled` | Create ingress resource (legacy nginx-ingress routing) | `false` |
 | `ingress.className` | Ingress class (`spec.ingressClassName`) | `nginx` |
 | `ingress.hosts` | List of ingress host URLs | `[example.services.rehive.io]` |
 | `ingress.annotations` | Annotations for the ingress resources | `{kubernetes.io/tls-acme: "true" }` |

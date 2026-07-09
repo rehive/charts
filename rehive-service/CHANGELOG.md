@@ -19,6 +19,7 @@ The web Deployment, Service, and PDB are untouched — web traffic is unaffected
 ## v1.3.0 - 2026-07-10
 
 ### Added
+- Gateway API support (`httpRoute`, disabled by default): renders an HTTPRoute attached to a shared Gateway (e.g. GKE Gateway with a Google Application Load Balancer), plus optional GKE `HealthCheckPolicy` and `GCPBackendPolicy` passthroughs targeting the Service. This is the standard routing path for new services; existing hand-applied routes can be adopted into a release later via Helm ownership labels/annotations (name overrides are provided for resources whose names don't match the chart's defaults).
 - Optional per-worker `strategy` override. The default remains the zero-downtime RollingUpdate (`maxUnavailable: 0`, `maxSurge: 2`). Singleton workers such as celery beat schedulers should set `strategy: {type: Recreate}` so two copies never run concurrently during an upgrade.
 - `podSecurityContext` and `containerSecurityContext` passthroughs applied to both the web and worker pods (empty by default).
 - `serviceAccount.name` value and a `serviceAccountName` helper: pods fall back to the namespace `default` ServiceAccount when `serviceAccount.create` is `false` and no name is given (previously they referenced a ServiceAccount that might not exist).
@@ -26,6 +27,7 @@ The web Deployment, Service, and PDB are untouched — web traffic is unaffected
 - Documented `imagePullSecrets` in values.yaml.
 
 ### Changed
+- `ingress.enabled` now defaults to `false` (was `true`). Routing is opt-in: new services should enable `httpRoute`, legacy services enable `ingress`. All known consumers set `ingress.enabled` explicitly, but double-check any values file that relied on the old default.
 - Worker deployments now honour `envFromSecret.enabled` and `envFromSecret.name` (previously the secret name was hardcoded to the release name and always mounted).
 - Worker pods now run as the chart's ServiceAccount, matching the web deployment (previously they ran as the namespace `default` ServiceAccount). No permission change with default values, but note this if your workers rely on the `default` account's bindings or Workload Identity annotations.
 - Worker `ports.containerPort` is now only rendered when `internalPort` is set (celery workers don't listen on a port).

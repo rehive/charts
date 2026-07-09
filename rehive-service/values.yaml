@@ -62,8 +62,10 @@ vendor:
   # for azure install use
   # name: azure
 
+# Legacy nginx-ingress routing. Disabled by default; new services should use
+# httpRoute (Gateway API) below.
 ingress:
-  enabled: true
+  enabled: false
   # Sets spec.ingressClassName; replaces the deprecated
   # kubernetes.io/ingress.class annotation.
   className: "nginx"
@@ -75,6 +77,46 @@ ingress:
     - hosts:
       - example.services.rehive.io
       secretName: example-service-tls
+
+# Gateway API routing via a shared Gateway (e.g. GKE Gateway controller with a
+# Google Application Load Balancer). Renders an HTTPRoute, plus optional
+# GKE-specific HealthCheckPolicy and GCPBackendPolicy targeting the Service.
+httpRoute:
+  enabled: false
+  # HTTPRoute name; defaults to <release>-external. The policy names default
+  # to <release>-health and <release>-backend. Overrides are mainly useful
+  # when adopting pre-existing resources into the release.
+  nameOverride: ""
+  healthCheckPolicyName: ""
+  backendPolicyName: ""
+  # Extra labels for the HTTPRoute, e.g. {gateway: external-http}
+  labels: {}
+  gateway:
+    name: external-http
+    namespace: gateway
+  hostnames:
+    - example.services.rehive.com
+  # Custom routing rules. When empty, a single rule routes / to the
+  # service on service.externalPort.
+  rules: []
+  # GKE HealthCheckPolicy spec.default passthrough; empty disables it.
+  # healthCheckPolicy:
+  #   logConfig:
+  #     enabled: true
+  #   config:
+  #     type: HTTP
+  #     httpHealthCheck:
+  #       requestPath: /readiness
+  healthCheckPolicy: {}
+  # GKE GCPBackendPolicy spec.default passthrough (e.g. Cloud Armor); empty
+  # disables it.
+  # backendPolicy:
+  #   securityPolicy: rehive-core
+  #   timeoutSec: 60
+  #   logging:
+  #     enabled: true
+  #     sampleRate: 1000000
+  backendPolicy: {}
 
 postgres:
   enabled: false
