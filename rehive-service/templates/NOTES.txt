@@ -5,6 +5,11 @@
 {{- if .Values.workers.enabled }}
   Workers:   {{ len .Values.workers.deployments }} deployments
 {{- end }}
+{{- if .Values.httpRoute.enabled }}
+{{- range .Values.httpRoute.hostnames }}
+  Host:      https://{{ . }}
+{{- end }}
+{{- end }}
 {{- if .Values.ingress.enabled }}
 {{- range .Values.ingress.hosts }}
   Host:      https://{{ . }}
