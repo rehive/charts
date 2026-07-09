@@ -7,7 +7,7 @@ metadata:
     {{ include "rehive-service.labels" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "rehive-service.fullname" . }}
+    name: {{ include "rehive-service.serviceAccountName" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
