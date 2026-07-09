@@ -33,6 +33,17 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
+# Secret for pulling images from a private registry, e.g. {name: my-registry-secret}
+imagePullSecrets: {}
+
+# Pod-level securityContext applied to the web and worker pods (e.g. runAsNonRoot,
+# fsGroup, seccompProfile). Empty by default; configure per service.
+podSecurityContext: {}
+
+# Container-level securityContext applied to the web and worker containers
+# (e.g. allowPrivilegeEscalation, capabilities, readOnlyRootFilesystem).
+containerSecurityContext: {}
+
 service:
   name: nginx
   type: ClusterIP
@@ -53,10 +64,12 @@ vendor:
 
 ingress:
   enabled: true
+  # Sets spec.ingressClassName; replaces the deprecated
+  # kubernetes.io/ingress.class annotation.
+  className: "nginx"
   hosts:
     - example.services.rehive.io
   annotations:
-    kubernetes.io/ingress.class: "nginx"
     kubernetes.io/tls-acme: "true"
   tls:
     - hosts:
@@ -76,16 +89,16 @@ postgres:
 redis:
   enabled: false
   host: redis-example-redis.example-namespace.svc.cluster.local
-  vhost: / 
-  user: guest
   port: 6379
   secret:
     name: redis-example-redis
-    key: rabbitmq-password
+    key: redis-password
 
 rabbitmq:
   enabled: false
-  host: patroni-example-patroni.example-namespace.svc.cluster.local
+  host: rabbitmq-example-rabbitmq-ha.example-namespace.svc.cluster.local
+  vhost: /
+  user: guest
   port: 5672
   secret:
     name: rabbitmq-example-rabbitmq-ha
@@ -110,6 +123,12 @@ workers:
       concurrency: 1
       queue: general
     resources: {}
+    # Optional per-worker rollout strategy. Defaults to a zero-downtime
+    # RollingUpdate (maxUnavailable: 0, maxSurge: 2). Singleton workers that
+    # must never run two copies at once (e.g. celery beat schedulers) should
+    # set:
+    #   strategy:
+    #     type: Recreate
 
 rbac:
   create: false
@@ -123,4 +142,7 @@ rbac:
 
 serviceAccount:
   create: true
+  # Name of the ServiceAccount to create/use. Defaults to the release name
+  # when empty; set create: false and a name to use an existing account.
+  name: ""
   annotations: {}

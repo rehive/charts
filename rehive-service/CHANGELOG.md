@@ -3,6 +3,27 @@
 This file documents all notable changes to Rehive Service Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## v1.3.0 - 2026-07-10
+
+### Added
+- Optional per-worker `strategy` override. The default remains the zero-downtime RollingUpdate (`maxUnavailable: 0`, `maxSurge: 2`). Singleton workers such as celery beat schedulers should set `strategy: {type: Recreate}` so two copies never run concurrently during an upgrade.
+- `podSecurityContext` and `containerSecurityContext` passthroughs applied to both the web and worker pods (empty by default).
+- `serviceAccount.name` value and a `serviceAccountName` helper: pods fall back to the namespace `default` ServiceAccount when `serviceAccount.create` is `false` and no name is given (previously they referenced a ServiceAccount that might not exist).
+- `ingress.className` value that sets `spec.ingressClassName`, replacing the deprecated `kubernetes.io/ingress.class` annotation in the default values.
+- Documented `imagePullSecrets` in values.yaml.
+
+### Changed
+- Worker deployments now honour `envFromSecret.enabled` and `envFromSecret.name` (previously the secret name was hardcoded to the release name and always mounted).
+- Worker pods now run as the chart's ServiceAccount, matching the web deployment (previously they ran as the namespace `default` ServiceAccount). No permission change with default values, but note this if your workers rely on the `default` account's bindings or Workload Identity annotations.
+- Worker `ports.containerPort` is now only rendered when `internalPort` is set (celery workers don't listen on a port).
+- Common labels now include the standard `app.kubernetes.io/instance` instead of the non-standard `helm.sh/release`. No selectors reference these labels, so this is metadata-only.
+- Chart.yaml upgraded to `apiVersion: v2` (requires Helm 3).
+- NOTES.txt now prints a deploy summary (image, replicas, workers, hosts) and rollout/log commands instead of the boilerplate "get the application URL" instructions.
+
+### Fixed
+- Worker manifests rendered a malformed YAML document separator (`---` joined to the next document's first line), which broke `helm lint` and strict YAML parsers. Helm's own splitter tolerated it, so deploys were unaffected.
+- Default values: `redis.secret.key` mistakenly defaulted to `rabbitmq-password`; `rabbitmq.host` example pointed at a patroni host; `vhost`/`user` sat under `redis` (unused) instead of `rabbitmq` (used by the templates).
+
 ## v1.2.0 - 2026-07-07
 
 ### Added

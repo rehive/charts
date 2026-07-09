@@ -1,16 +1,20 @@
-{{ $labels := include "rehive-service.labels" . }}
-{{ $plugins := include "rehive-service.plugins" . }}
-{{ $serviceName := include "rehive-service.fullname" . }}
-{{ $gcloudCredentials := .Values.gcloudCredentials }}
-{{ $releaseName := .Release.Name }}
-{{ $repository := .Values.image.repository }}
-{{ $revision := .Release.Revision }}
-{{ $tag := .Values.image.tag }}
-{{ $vendorName := .Values.vendor.name }}
-{{ $imagePullSecret := .Values.imagePullSecrets | default dict }}
-
-{{- if .Values.workers.enabled -}}
-{{- range $worker := .Values.workers.deployments -}}
+{{- $labels := include "rehive-service.labels" . }}
+{{- $plugins := include "rehive-service.plugins" . }}
+{{- $serviceName := include "rehive-service.fullname" . }}
+{{- $serviceAccountName := include "rehive-service.serviceAccountName" . }}
+{{- $gcloudCredentials := .Values.gcloudCredentials }}
+{{- $envFromSecret := .Values.envFromSecret }}
+{{- $podSecurityContext := .Values.podSecurityContext }}
+{{- $containerSecurityContext := .Values.containerSecurityContext }}
+{{- $releaseName := .Release.Name }}
+{{- $repository := .Values.image.repository }}
+{{- $revision := .Release.Revision }}
+{{- $tag := .Values.image.tag }}
+{{- $vendorName := .Values.vendor.name }}
+{{- $imagePullSecret := .Values.imagePullSecrets | default dict }}
+{{- if .Values.workers.enabled }}
+{{- range $worker := .Values.workers.deployments }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,10 +30,14 @@ spec:
       app.kubernetes.io/name: {{ $serviceName }}
       app.kubernetes.io/component: worker
   strategy:
+    {{- if $worker.strategy }}
+    {{- toYaml $worker.strategy | nindent 4 }}
+    {{- else }}
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 0
       maxSurge: 2
+    {{- end }}
   template:
     metadata:
       labels:
@@ -38,6 +46,7 @@ spec:
       annotations:
         helm/revision: "{{ $revision }}" # Hack to force restart on upgrade
     spec:
+      serviceAccountName: {{ $serviceAccountName }}
       {{- with $worker.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -51,12 +60,22 @@ spec:
       topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with $podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: {{ $worker.name }}
         image: {{ $repository }}:{{ $tag }}
         imagePullPolicy: {{ $.Values.image.pullPolicy }}
+        {{- with $containerSecurityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with $worker.internalPort }}
         ports:
-        - containerPort: {{ $worker.internalPort }}
+        - containerPort: {{ . }}
+        {{- end }}
         command:
           {{- toYaml $worker.command | nindent 12 }}
         args:
@@ -79,9 +98,11 @@ spec:
           - name: VERSION
             value: "{{ $tag }}"
           {{ $plugins | nindent 10 }}
+        {{- if $envFromSecret.enabled }}
         envFrom:
           - secretRef:
-              name: {{ $serviceName }}
+              name: {{ $envFromSecret.name | default $serviceName }}
+        {{- end }}
         resources:
           {{ toYaml $worker.resources | nindent 10 }}
         {{- if $gcloudCredentials.enabled }}
@@ -105,6 +126,5 @@ spec:
       imagePullSecrets:
       - name: {{ $imagePullSecret.name}}
       {{- end }}
----
-{{- end -}}
-{{- end -}}
+{{- end }}
+{{- end }}
