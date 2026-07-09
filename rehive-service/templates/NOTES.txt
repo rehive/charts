@@ -1,24 +1,15 @@
-{{ .Chart.Name }} release "{{ .Release.Name }}" deployed to namespace "{{ .Release.Namespace }}" (revision {{ .Release.Revision }}).
+{{ .Chart.Name }} release "{{ .Release.Name }}" deployed to "{{ .Release.Namespace }}" (revision {{ .Release.Revision }}).
 
-  Image:        {{ .Values.image.repository }}:{{ .Values.image.tag }}
-  Web replicas: {{ .Values.deployment.replicaCount }}
+  Image:     {{ .Values.image.repository }}:{{ .Values.image.tag }}
+  Web:       {{ .Values.deployment.replicaCount }} replicas
 {{- if .Values.workers.enabled }}
-  Workers:      {{ len .Values.workers.deployments }} deployment(s)
+  Workers:   {{ len .Values.workers.deployments }} deployments
 {{- end }}
 {{- if .Values.ingress.enabled }}
-  Hosts:
 {{- range .Values.ingress.hosts }}
-    - https://{{ . }}
+  Host:      https://{{ . }}
 {{- end }}
 {{- end }}
 
-Watch the rollout:
-
-  kubectl rollout status deployment/{{ include "rehive-service.fullname" . }} -n {{ .Release.Namespace }}
-{{- if .Values.workers.enabled }}
-  kubectl get deployments -n {{ .Release.Namespace }} -l app.kubernetes.io/component=worker
-{{- end }}
-
-Tail web logs:
-
+  kubectl get deployments -n {{ .Release.Namespace }}
   kubectl logs deployment/{{ include "rehive-service.fullname" . }} -n {{ .Release.Namespace }} -f

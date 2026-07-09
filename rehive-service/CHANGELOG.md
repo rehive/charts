@@ -31,7 +31,7 @@ The web Deployment, Service, and PDB are untouched — web traffic is unaffected
 - Worker `ports.containerPort` is now only rendered when `internalPort` is set (celery workers don't listen on a port).
 - Common labels now include the standard `app.kubernetes.io/instance` instead of the non-standard `helm.sh/release`. No selectors reference these labels, so this is metadata-only.
 - Chart.yaml upgraded to `apiVersion: v2` (requires Helm 3).
-- NOTES.txt now prints a deploy summary (image, replicas, workers, hosts) and rollout/log commands instead of the boilerplate "get the application URL" instructions.
+- NOTES.txt now prints a compact deploy summary (image, replicas, workers, hosts) plus quick status/log commands instead of the boilerplate "get the application URL" instructions.
 
 ### Fixed
 - Worker manifests rendered a malformed YAML document separator (`---` joined to the next document's first line), which broke `helm lint` and strict YAML parsers. Helm's own splitter tolerated it, so deploys were unaffected.
