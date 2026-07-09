@@ -48,6 +48,7 @@ The following table lists the configurable parameters of the rehive-service char
 | `workers.deployments[].nodeSelector` | Optional per-worker node labels for scheduling | `{}` |
 | `workers.deployments[].tolerations` | Optional per-worker tolerations | `[]` |
 | `workers.deployments[].strategy` | Optional per-worker rollout strategy. Set `{type: Recreate}` for singletons like celery beat schedulers so two copies never run concurrently. | RollingUpdate, `maxUnavailable: 0`, `maxSurge: 2` |
+| `workers.deployments[].name` | Worker deployment name; also set as the `rehive.io/worker` label in the worker's (immutable) selector, so pods of a single worker can be targeted with `-l rehive.io/worker=<name>` | |
 | `image.repository` | Docker image containing the service's source | `rehive/example` |
 | `image.tag` | Docker image tag to use for the deployment. This is usually set to a version. | `latest` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
