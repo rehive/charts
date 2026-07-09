@@ -23,12 +23,14 @@ metadata:
     {{ $labels | nindent 4 }}
     app.kubernetes.io/name: {{ $serviceName }}
     app.kubernetes.io/component: worker
+    rehive.io/worker: {{ $worker.name }}
 spec:
   replicas: {{ $worker.replicaCount }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ $serviceName }}
       app.kubernetes.io/component: worker
+      rehive.io/worker: {{ $worker.name }}
   strategy:
     {{- if $worker.strategy }}
     {{- toYaml $worker.strategy | nindent 4 }}
@@ -43,6 +45,7 @@ spec:
       labels:
         app.kubernetes.io/name: {{ $serviceName }}
         app.kubernetes.io/component: worker
+        rehive.io/worker: {{ $worker.name }}
       annotations:
         helm/revision: "{{ $revision }}" # Hack to force restart on upgrade
     spec:
