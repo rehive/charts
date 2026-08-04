@@ -5,6 +5,7 @@ rehive-service is a chart that deploys a rehive service on Kubernetes.
 ## Prerequisites
 
 - Kubernetes 1.9+
+- Helm 3
 
 ## Installing the Chart
 
@@ -15,7 +16,7 @@ To install the chart with the release name `service-example`:
 $ helm repo add rehive https://rehive.github.io/charts
 
 ## Install the rehive-service helm chart
-$ helm install --name service-example rehive/rehive-service
+$ helm install service-example rehive/rehive-service
 ```
 
 > **Tip**: List all releases using `helm list`
@@ -28,7 +29,7 @@ $ helm install --name service-example rehive/rehive-service
 To uninstall/delete the `service-example` deployment:
 
 ```console
-$ helm delete --purge service-example
+$ helm uninstall service-example
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
