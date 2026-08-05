@@ -3,6 +3,19 @@
 This file documents all notable changes to Rehive Service Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## v2.0.0 - 2026-07-10
+
+### Changed
+- **Breaking:** every worker Deployment's selector now includes a unique `rehive.io/worker: <worker name>` label. Previously all workers in a release shared an identical selector (`app.kubernetes.io/name` + `app.kubernetes.io/component: worker`), which violates the Kubernetes requirement that controller selectors not overlap and made it impossible to target a single worker with a Service, PDB, or HPA.
+
+### Upgrading from 1.x
+Selectors are immutable, so each existing worker Deployment must be deleted and recreated once. `helm upgrade` alone will fail with a field-immutability error. Two options per worker:
+
+- **Zero consumer downtime** (recommended for busy queues): `kubectl delete deployment <worker> --cascade=orphan`, run `helm upgrade`, wait for the new pods to become Ready, then delete the orphaned old ReplicaSet **by name** (never by label — old and new share labels).
+- **Simple, brief consumption gap** (fine for low-traffic queues and required for beat schedulers, where overlap would duplicate scheduled tasks): `kubectl delete deployment <worker>`, then `helm upgrade`. Tasks queue in the broker during the gap; nothing is lost.
+
+The web Deployment, Service, and PDB are untouched — web traffic is unaffected throughout.
+
 ## v1.3.0 - 2026-07-10
 
 ### Added
