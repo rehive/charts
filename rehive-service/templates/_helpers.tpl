@@ -27,8 +27,20 @@ Common labels
 */}}
 {{- define "rehive-service.labels" -}}
 app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 helm.sh/chart: {{ include "rehive-service.chart" . }}
-helm.sh/release: {{ include "rehive-service.fullname" . }}
+{{- end -}}
+
+{{/*
+Name of the ServiceAccount the pods run as. Falls back to the namespace
+default SA when the chart neither creates one nor is given a name.
+*/}}
+{{- define "rehive-service.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+{{- default (include "rehive-service.fullname" .) .Values.serviceAccount.name -}}
+{{- else -}}
+{{- default "default" .Values.serviceAccount.name -}}
+{{- end -}}
 {{- end -}}
 
 
