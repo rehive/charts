@@ -5,6 +5,9 @@
 {{- if .Values.workers.enabled }}
   Workers:   {{ len .Values.workers.deployments }} deployments
 {{- end }}
+{{- if .Values.secretManager.enabled }}
+  Secrets:   {{ len .Values.secretManager.keys }} from Secret Manager ({{ include "rehive-service.secretManager.prefix" . }}*)
+{{- end }}
 {{- if .Values.httpRoute.enabled }}
 {{- range .Values.httpRoute.hostnames }}
   Host:      https://{{ . }}

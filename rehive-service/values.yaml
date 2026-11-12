@@ -57,6 +57,32 @@ envFromSecret:
   enabled: true
   name: ""
 
+# Plain, non-secret environment variables for the web and worker containers,
+# e.g. ALLOWED_HOSTS. Secrets go in secretManager.
+env: {}
+
+# Load secrets from Google Secret Manager (needs the GKE Secret Manager add-on
+# and Workload Identity). Each key is its own regional secret named
+# <environment>--<service>--<KEY>, mounted as a file, and exported as an
+# environment variable by the with-secrets loader before the command runs.
+# The pods' ServiceAccount needs roles/secretmanager.secretAccessor on them.
+secretManager:
+  enabled: false
+  # staging or production (the rdeploy config name).
+  environment: ""
+  # Defaults to the release name (rdeploy's project_name).
+  service: ""
+  # Overrides the whole "<environment>--<service>--" prefix.
+  prefix: ""
+  project: rehive-services
+  location: europe-west4
+  # Environment variable names, e.g. [SECRET_KEY, SENTRY_DSN].
+  keys: []
+  mountPath: /var/run/secrets/rehive
+  loaderPath: /opt/rehive/bin/with-secrets
+  # Oldest rdeploy whose manage/shell understands this setup.
+  minRdeploy: 0.5.0
+
 vendor:
   name: gcp
   # for azure install use
