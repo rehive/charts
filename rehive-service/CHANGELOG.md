@@ -3,7 +3,7 @@
 This file documents all notable changes to Rehive Service Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
-## v1.4.0 - unreleased
+## v1.4.0 - 2026-11-12
 
 Backward compatible: with the new values left at their defaults, every existing values file renders the same manifests as 1.3.0 (checked against 167 values files with `scripts/compat_check.py`; only the `helm.sh/chart` label changes).
 
