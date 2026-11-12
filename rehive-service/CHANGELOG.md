@@ -3,6 +3,18 @@
 This file documents all notable changes to Rehive Service Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## v1.4.0 - unreleased
+
+Backward compatible: with the new values left at their defaults, every existing values file renders the same manifests as 1.3.0 (checked against 167 values files with `scripts/compat_check.py`; only the `helm.sh/chart` label changes).
+
+### Added
+- `secretManager` (disabled by default): loads secrets from Google Secret Manager through the GKE Secret Manager add-on, one regional secret per key named `<environment>--<service>--<KEY>`. Renders a `SecretProviderClass` and a `with-secrets` loader ConfigMap, mounts both into web and worker pods, prefixes every command with the loader, adds the GKE metadata server node selector, and annotates the web Deployment with `rehive.com/entrypoint` and `rehive.com/min-rdeploy` for rdeploy. No Kubernetes Secret is created. See the README.
+- `env`: plain, non-secret environment variables for web and worker pods.
+- `scripts/compat_check.py` and `tests/rehive-service/secret-manager-values.yaml` in the repo, for checking releases.
+
+### Changed
+- Volumes, volume mounts, node selectors and commands for web and worker pods are now built by shared helpers. Rendered output is unchanged when `secretManager` is off.
+
 ## v1.3.0 - 2026-07-10
 
 ### Added

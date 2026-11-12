@@ -6,6 +6,10 @@ metadata:
     {{ include "rehive-service.labels" . | nindent 4 }}
     app.kubernetes.io/name: {{ include "rehive-service.fullname" . }}
     app.kubernetes.io/component: server
+  {{- with include "rehive-service.deploymentAnnotations" . }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.deployment.replicaCount }}
   selector:
@@ -24,9 +28,9 @@ spec:
     spec:
       serviceAccountName: {{ include "rehive-service.serviceAccountName" . }}
       terminationGracePeriodSeconds: {{ .Values.deployment.terminationGracePeriodSeconds }}
-      {{- with .Values.deployment.nodeSelector }}
+      {{- with include "rehive-service.nodeSelector" (dict "root" $ "nodeSelector" .Values.deployment.nodeSelector) }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
+        {{- . | nindent 8 }}
       {{- end }}
       {{- with .Values.deployment.tolerations }}
       tolerations:
@@ -64,7 +68,7 @@ spec:
         ports:
         - containerPort: {{ .Values.service.internalPort }}
         command:
-          {{- toYaml .Values.deployment.command | nindent 12 }}
+          {{- include "rehive-service.command" (dict "root" $ "command" .Values.deployment.command) | nindent 12 }}
         args:
           {{- range $key, $value := .Values.deployment.args }}
           {{- if $value }}
@@ -83,6 +87,7 @@ spec:
           - name: VERSION
             value: "{{ .Values.image.tag }}"
           {{ include "rehive-service.plugins" . | nindent 10 }}
+          {{- include "rehive-service.env" . | nindent 10 }}
         {{- if .Values.envFromSecret.enabled }}
         envFrom:
           - secretRef:
@@ -102,22 +107,18 @@ spec:
         {{- end}}
         resources:
           {{ toYaml .Values.deployment.resources | nindent 10 }}
-        {{- if .Values.gcloudCredentials.enabled }}
+        {{- with include "rehive-service.volumeMounts" . }}
         volumeMounts:
-          - name: {{ .Values.gcloudCredentials.kubernetesSecret }}
-            mountPath: /etc/credentials
-            readOnly: true
+          {{- . | nindent 10 }}
         {{- end }}
       {{- if (eq "azure" .Values.vendor.name) }}
       dnsConfig:
         options:
         - name: single-request-reopen
       {{- end }}
-      {{- if .Values.gcloudCredentials.enabled }}
+      {{- with include "rehive-service.volumes" . }}
       volumes:
-        - name: {{ .Values.gcloudCredentials.kubernetesSecret }}
-          secret:
-            secretName: {{ .Values.gcloudCredentials.kubernetesSecret }}
+        {{- . | nindent 8 }}
       {{- end }}
       {{- $imagePullSecret := .Values.imagePullSecrets | default dict }}
       {{- if $imagePullSecret.name}}

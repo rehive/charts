@@ -12,6 +12,9 @@
 {{- $tag := .Values.image.tag }}
 {{- $vendorName := .Values.vendor.name }}
 {{- $imagePullSecret := .Values.imagePullSecrets | default dict }}
+{{- $env := include "rehive-service.env" . }}
+{{- $volumeMounts := include "rehive-service.volumeMounts" . }}
+{{- $volumes := include "rehive-service.volumes" . }}
 {{- if .Values.workers.enabled }}
 {{- range $worker := .Values.workers.deployments }}
 ---
@@ -47,9 +50,9 @@ spec:
         helm/revision: "{{ $revision }}" # Hack to force restart on upgrade
     spec:
       serviceAccountName: {{ $serviceAccountName }}
-      {{- with $worker.nodeSelector }}
+      {{- with include "rehive-service.nodeSelector" (dict "root" $ "nodeSelector" $worker.nodeSelector) }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
+        {{- . | nindent 8 }}
       {{- end }}
       {{- with $worker.tolerations }}
       tolerations:
@@ -77,7 +80,7 @@ spec:
         - containerPort: {{ . }}
         {{- end }}
         command:
-          {{- toYaml $worker.command | nindent 12 }}
+          {{- include "rehive-service.command" (dict "root" $ "command" $worker.command) | nindent 12 }}
         args:
           {{- range $key, $value := $worker.args }}
           {{- if $value }}
@@ -98,6 +101,7 @@ spec:
           - name: VERSION
             value: "{{ $tag }}"
           {{ $plugins | nindent 10 }}
+          {{- $env | nindent 10 }}
         {{- if $envFromSecret.enabled }}
         envFrom:
           - secretRef:
@@ -105,22 +109,18 @@ spec:
         {{- end }}
         resources:
           {{ toYaml $worker.resources | nindent 10 }}
-        {{- if $gcloudCredentials.enabled }}
+        {{- with $volumeMounts }}
         volumeMounts:
-          - name: {{ $gcloudCredentials.kubernetesSecret }}
-            mountPath: /etc/credentials
-            readOnly: true
+          {{- . | nindent 10 }}
         {{- end }}
       {{- if (eq "azure" $vendorName) }}
       dnsConfig:
         options:
           - name: single-request-reopen
       {{- end }}
-      {{- if $gcloudCredentials.enabled }}
+      {{- with $volumes }}
       volumes:
-        - name: {{ $gcloudCredentials.kubernetesSecret }}
-          secret:
-            secretName: {{ $gcloudCredentials.kubernetesSecret }}
+        {{- . | nindent 8 }}
       {{- end }}
       {{- if $imagePullSecret.name}}
       imagePullSecrets:
